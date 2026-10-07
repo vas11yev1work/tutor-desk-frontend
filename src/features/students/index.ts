@@ -94,44 +94,26 @@ export const useStudentSeries = (id: MaybeRefOrGetter<string>) =>
     queryFn: () => api.get<Series[]>(`/api/admin/students/${toValue(id)}/series`),
   });
 
-const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
-
 /** 'YYYY-MM-DD' → «1 сентября». */
 const formatIsoDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(y!, m! - 1, d).toLocaleDateString('ru', { day: 'numeric', month: 'long' });
 };
 
-/** Правила с одинаковым временем и длительностью — одной карточкой: «пн ср пт · в 15:30 · 60 мин». */
-export const groupSeries = (series: Series[]) => {
-  const groups = new Map<string, Series[]>();
-  for (const s of series) {
-    const key = `${s.startTime}|${s.durationMin}`;
-    groups.set(key, [...(groups.get(key) ?? []), s]);
-  }
-  return [...groups.values()].map(list => {
-    const { startTime, durationMin } = list[0]!;
-    const startsOn = list.map(s => s.startsOn).sort()[0]!;
-    const endsOn = list.every(s => s.endsOn)
-      ? list
-          .map(s => s.endsOn!)
-          .sort()
-          .at(-1)!
-      : null;
-    return {
-      key: `${startTime}|${durationMin}`,
-      days: [...new Set(list.map(s => s.weekday))].sort().map(w => WEEKDAYS[w - 1]!),
-      caption: [
-        `регулярно в ${startTime}`,
-        `${durationMin} мин`,
-        `с ${formatIsoDate(startsOn)}`,
-        endsOn && `до ${formatIsoDate(endsOn)}`,
-      ]
-        .filter(Boolean)
-        .join(' · '),
-    };
-  });
-};
+/** «регулярно в 15:30 · 60 мин · с 1 сентября · до 31 мая». */
+export const seriesCaption = (s: Series) =>
+  [
+    `регулярно в ${s.startTime}`,
+    `${s.durationMin} мин`,
+    `с ${formatIsoDate(s.startsOn)}`,
+    s.endsOn && `до ${formatIsoDate(s.endsOn)}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+const WEEKDAYS_LONG = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+/** ISO-день недели → «Понедельник». */
+export const weekdayLong = (weekday: number) => WEEKDAYS_LONG[weekday - 1]!;
 
 /** Публичная ссылка ученика — страница /s/:token этого же фронта. */
 export const portalUrl = (token: string) => `${location.origin}/s/${token}`;

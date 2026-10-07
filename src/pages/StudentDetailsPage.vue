@@ -96,13 +96,14 @@
 
       <!-- Занятия -->
       <div class="flex min-w-0 flex-col gap-5.5 min-[1200px]:flex-[2_1_520px]">
-        <section v-if="seriesGroups.length" class="flex flex-col gap-2.5">
+        <section v-if="series?.length" class="flex flex-col gap-2.5">
           <h2 class="px-1 section-title">Регулярные занятия</h2>
-          <div v-for="g in seriesGroups" :key="g.key" class="flex flex-col gap-1.5 card px-4 py-3.5">
-            <div class="flex gap-1.5">
-              <UiChip v-for="d in g.days" :key="d" tone="ink" class="font-mono">{{ d }}</UiChip>
+          <div v-for="s in series" :key="s.id" class="flex items-center gap-3 card px-4 py-3.5">
+            <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+              <div class="text-[15px] font-semibold">{{ weekdayLong(s.weekday) }}</div>
+              <div class="text-[13px] text-muted">{{ seriesCaption(s) }}</div>
             </div>
-            <div class="text-[13px] text-muted">{{ g.caption }}</div>
+            <UiButton variant="ghost" size="xs" @click="editingSeries = s">Изменить</UiButton>
           </div>
         </section>
 
@@ -171,6 +172,13 @@
       {{ student.name }} пропадёт навсегда вместе со всеми занятиями. Вернуть не получится.
     </UiConfirmDialog>
     <NewLessonDialog v-model:open="addingLesson" :default-student-id="id" />
+    <EditSeriesDialog
+      v-if="student"
+      :open="!!editingSeries"
+      :student="student"
+      :series="editingSeries ?? undefined"
+      @update:open="v => !v && (editingSeries = null)"
+    />
   </div>
 </template>
 
@@ -181,7 +189,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 
 import { ApiError } from '@/api/client';
-import type { Lesson } from '@/api/types';
+import type { Lesson, Series } from '@/api/types';
+import EditSeriesDialog from '@/components/EditSeriesDialog.vue';
 import NewLessonDialog from '@/components/NewLessonDialog.vue';
 import StudentFormDialog from '@/components/StudentFormDialog.vue';
 import UiAvatar from '@/components/ui/UiAvatar.vue';
@@ -192,14 +201,15 @@ import { addDays, formatTime, lessonEnd, sameDay, startOfDay } from '@/features/
 import {
   EXAM_LABEL,
   EXAM_TONE,
-  groupSeries,
   portalUrl,
+  seriesCaption,
   telegram,
   useDeleteStudent,
   useRegenerateToken,
   useStudent,
   useStudentLessons,
   useStudentSeries,
+  weekdayLong,
 } from '@/features/students';
 
 const CAPTION = 'text-xs font-semibold tracking-[0.06em] text-white/60 uppercase';
@@ -213,6 +223,8 @@ const isNotFound = computed(() => error.value instanceof ApiError && error.value
 const tg = computed(() => telegram(student.value?.contact ?? null));
 const editing = ref(false);
 const addingLesson = ref(false);
+/** Правило, открытое в окне «Регулярное расписание». */
+const editingSeries = ref<Series | null>(null);
 
 // Ссылка
 const linkLabel = computed(() => student.value && portalUrl(student.value.accessToken).replace(/^https?:\/\//, ''));
@@ -254,7 +266,6 @@ const { data: lessons } = useStudentLessons(id, { from: startOfDay(now), to: add
 const upcoming = computed(() => (lessons.value ?? []).filter(l => lessonEnd(l) > now).slice(0, 3));
 
 const { data: series } = useStudentSeries(id);
-const seriesGroups = computed(() => groupSeries(series.value ?? []));
 
 const weekday = (d: Date, style: 'short' | 'long') => d.toLocaleDateString('ru', { weekday: style });
 const dayLabel = (d: Date) => `${weekday(d, 'short')} ${d.getDate()}`;

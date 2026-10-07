@@ -141,7 +141,14 @@
       >
         Занятие пропадёт из расписания у вас и у ученика. Вернуть его не получится.
       </UiConfirmDialog>
-      <EditSeriesDialog v-if="lesson.seriesId" v-model:open="seriesOpen" :lesson="lesson" :initial-mode="seriesMode" />
+      <EditSeriesDialog
+        v-if="lesson.seriesId"
+        v-model:open="seriesOpen"
+        :student="lesson.student"
+        :series="lessonSeries"
+        :default-date="toIsoDate(new Date(lesson.startsAt))"
+        :initial-mode="seriesMode"
+      />
     </template>
   </div>
 </template>
@@ -180,11 +187,12 @@ import {
   movedFrom,
   pluralize,
   sameDay,
+  toIsoDate,
   useDeleteLesson,
   useLesson,
   useLessonStatus,
 } from '@/features/lessons';
-import { EXAM_LABEL, EXAM_TONE } from '@/features/students';
+import { EXAM_LABEL, EXAM_TONE, useStudentSeries } from '@/features/students';
 
 const route = useRoute();
 const router = useRouter();
@@ -226,6 +234,9 @@ const movedNote = computed(() => {
 });
 
 const moving = ref(false);
+// Правило этого занятия — для окна «Регулярное расписание».
+const { data: studentSeries } = useStudentSeries(() => lesson.value?.student.id ?? '');
+const lessonSeries = computed(() => studentSeries.value?.find(s => s.id === lesson.value?.seriesId));
 const seriesOpen = ref(false);
 const seriesMode = ref<'edit' | 'end'>('edit');
 const editSeries = (mode: 'edit' | 'end') => {

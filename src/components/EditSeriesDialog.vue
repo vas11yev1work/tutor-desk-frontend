@@ -1,7 +1,7 @@
 <template>
   <UiDialog v-model:open="open" title="Регулярное расписание">
     <form :id="formId" class="contents" @submit.prevent="submit">
-      <LessonStudentCard :student="lesson.student">
+      <LessonStudentCard :student="student">
         {{ series ? `Сейчас: ${currentLabel}` : 'Правило уже завершено' }}
       </LessonStudentCard>
 
@@ -14,8 +14,8 @@
           </UiTextField>
 
           <div class="flex flex-col gap-2">
-            <span class="text-[13px] font-semibold text-label">Дни недели</span>
-            <UiChoice v-model="days" label="Дни недели" :options="WEEKDAYS" multiple class="grid grid-cols-7 gap-1.5" />
+            <span class="text-[13px] font-semibold text-label">День недели</span>
+            <UiChoice v-model="weekday" label="День недели" :options="WEEKDAYS" class="grid grid-cols-7 gap-1.5" />
           </div>
 
           <div class="sm:max-w-55">
@@ -61,7 +61,6 @@
         :form="formId"
         size="lg"
         :variant="mode === 'edit' ? 'ink' : 'danger'"
-        :disabled="mode === 'edit' && !days.length"
         :loading="isPending"
       >
         {{ mode === 'edit' ? `Сохранить с ${dayMonth(fromDate)}` : `Завершить после ${dayMonth(lastDate)}` }}
@@ -75,7 +74,7 @@ import { Calendar, Clock, Info } from '@lucide/vue';
 import { computed, ref, useId, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
-import type { Lesson } from '@/api/types';
+import type { Lesson, Series } from '@/api/types';
 import LessonStudentCard from '@/components/LessonStudentCard.vue';
 import UiAlert from '@/components/ui/UiAlert.vue';
 import UiButton from '@/components/ui/UiButton.vue';
@@ -90,12 +89,22 @@ import {
   fromIsoDateTime,
   toIsoDate,
   useChangeSeries,
-  useCreateSeries,
   useEndSeries,
 } from '@/features/lessons';
-import { useStudentSeries } from '@/features/students';
 
-const { lesson, initialMode = 'edit' } = defineProps<{ lesson: Lesson; initialMode?: 'edit' | 'end' }>();
+const {
+  student,
+  series = undefined,
+  defaultDate = undefined,
+  initialMode = 'edit',
+} = defineProps<{
+  student: Lesson['student'];
+  /** Нет — правило уже завершено (или ещё грузится). */
+  series?: Series;
+  /** С какой даты по умолчанию — например, дата открытого занятия. Иначе сегодня. */
+  defaultDate?: string;
+  initialMode?: 'edit' | 'end';
+}>();
 const open = defineModel<boolean>('open', { required: true });
 
 const MODES = [
@@ -103,78 +112,59 @@ const MODES = [
   { value: 'end' as const, label: 'Завершить' },
 ];
 const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'].map((label, i) => ({ value: i + 1, label }));
-// «по средам и пятницам»
+// «по средам»
 const ON_WEEKDAYS = ['понедельникам', 'вторникам', 'средам', 'четвергам', 'пятницам', 'субботам', 'воскресеньям'];
-
-const { data: allSeries } = useStudentSeries(() => lesson.student.id);
-const series = computed(() => allSeries.value?.find(s => s.id === lesson.seriesId));
 
 const formId = useId();
 const today = toIsoDate(new Date());
 const mode = ref<'edit' | 'end'>('edit');
 const fromDate = ref('');
 const lastDate = ref('');
-const days = ref<number[]>([]);
+const weekday = ref(1);
 const time = ref('');
 const durationMin = ref(60);
 
-// И при открытии, и когда правила догрузились после открытия.
-watch([open, series], ([v], [wasOpen]) => {
-  if (!v || (wasOpen && days.value.length)) return;
-  const lessonDate = toIsoDate(new Date(lesson.startsAt));
+// И при открытии, и когда правило догрузилось после открытия.
+watch([open, () => series?.id], ([v]) => {
+  if (!v || !series) return;
   mode.value = initialMode;
-  fromDate.value = lastDate.value = lessonDate < today ? today : lessonDate;
-  days.value = series.value ? [series.value.weekday] : [];
-  time.value = series.value?.startTime ?? '';
-  durationMin.value = series.value?.durationMin ?? lesson.durationMin;
+  fromDate.value = lastDate.value = defaultDate && defaultDate > today ? defaultDate : today;
+  weekday.value = series.weekday;
+  time.value = series.startTime;
+  durationMin.value = series.durationMin;
 });
 
 const dayMonth = (iso: string) =>
   iso ? fromIsoDateTime(iso).toLocaleDateString('ru', { day: 'numeric', month: 'long' }) : '…';
 
-const currentLabel = computed(() => {
-  const s = series.value;
-  if (!s) return '';
-  return `${everyIsoWeekday(s.weekday).toLowerCase()} в ${s.startTime} · ${s.durationMin} мин · с ${dayMonth(s.startsOn)}`;
-});
-
-const newRule = computed(() => {
-  if (!days.value.length) return 'выберите хотя бы один день';
-  const list = [...days.value].sort().map(d => ON_WEEKDAYS[d - 1]);
-  return `по ${list.join(' и ')} в ${time.value || '…'}, ${durationMin.value} мин`;
-});
+const currentLabel = computed(() =>
+  series
+    ? `${everyIsoWeekday(series.weekday).toLowerCase()} в ${series.startTime} · ${series.durationMin} мин · с ${dayMonth(series.startsOn)}`
+    : '',
+);
+const newRule = computed(() => `по ${ON_WEEKDAYS[weekday.value - 1]} в ${time.value || '…'}, ${durationMin.value} мин`);
 
 const change = useChangeSeries();
-const create = useCreateSeries();
 const end = useEndSeries();
-const isPending = computed(() => change.isPending.value || create.isPending.value || end.isPending.value);
-
-// Правило на бэке — один день недели. Первый день меняем у текущего правила, на остальные заводим новые с той же даты.
-const saveEdit = async (current: NonNullable<typeof series.value>) => {
-  const sorted = [...days.value].sort();
-  const primary = sorted.includes(current.weekday) ? current.weekday : sorted[0]!;
-  const rule = { startTime: time.value, durationMin: durationMin.value };
-  await change.mutateAsync({
-    id: current.id,
-    fromDate: fromDate.value,
-    weekday: primary,
-    timezone: current.timezone,
-    ...rule,
-  });
-  for (const weekday of sorted.filter(d => d !== primary))
-    await create.mutateAsync({ studentId: current.studentId, weekday, startsOn: fromDate.value, ...rule });
-};
+const isPending = computed(() => change.isPending.value || end.isPending.value);
 
 const submit = async () => {
-  const current = series.value;
-  if (!current) return;
+  if (!series) return;
   try {
-    if (mode.value === 'edit') await saveEdit(current);
-    else await end.mutateAsync({ id: current.id, fromDate: toIsoDate(addDays(fromIsoDateTime(lastDate.value), 1)) });
+    if (mode.value === 'edit')
+      await change.mutateAsync({
+        id: series.id,
+        fromDate: fromDate.value,
+        weekday: weekday.value,
+        startTime: time.value,
+        durationMin: durationMin.value,
+        timezone: series.timezone,
+      });
+    else await end.mutateAsync({ id: series.id, fromDate: toIsoDate(addDays(fromIsoDateTime(lastDate.value), 1)) });
     open.value = false;
     toast.success(mode.value === 'edit' ? 'Расписание изменено' : 'Регулярные занятия завершены');
   } catch {
-    toast.error('Не удалось сохранить расписание. Проверьте его и попробуйте ещё раз');
+    toast.error('Не удалось сохранить расписание. Попробуйте ещё раз');
   }
 };
 </script>
