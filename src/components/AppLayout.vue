@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-[calc(100dvh-env(safe-area-inset-top))]">
+  <div class="flex min-h-screen">
     <aside class="sticky top-0 hidden h-screen w-60 flex-none flex-col gap-7 bg-paper px-4 py-6 text-white md:flex">
       <UiLogo compact class="px-1.5" />
       <nav aria-label="Разделы" class="flex flex-col gap-1">
@@ -38,7 +38,7 @@
 
     <nav
       aria-label="Разделы"
-      class="fixed inset-x-0 bottom-0 z-10 flex min-h-21 justify-around border-t border-line-card bg-white/95 px-3 pt-2 pb-[max(26px,env(safe-area-inset-bottom))] backdrop-blur-lg md:hidden"
+      class="fixed inset-x-0 bottom-0 z-10 flex h-21 justify-around border-t border-line-card bg-white/95 px-3 pt-2 pb-6.5 backdrop-blur-lg md:hidden"
     >
       <RouterLink
         v-for="item in nav"

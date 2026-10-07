@@ -1,5 +1,5 @@
 <template>
-  <main class="flex min-h-[calc(100dvh-env(safe-area-inset-top))] flex-col bg-white md:flex-row">
+  <main class="flex min-h-screen flex-col bg-white md:flex-row">
     <section
       class="relative flex flex-auto flex-col justify-center gap-5.5 overflow-hidden bg-paper px-7 pt-10 pb-16 text-white md:basis-[55%] md:justify-between md:gap-10 md:p-[clamp(32px,6vw,80px)]"
     >
