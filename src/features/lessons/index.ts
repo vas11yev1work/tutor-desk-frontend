@@ -41,6 +41,67 @@ export const useCreateLesson = () => {
   });
 };
 
+/** Перенос одного занятия: бэк ставит isModified и помнит originalStartsAt. */
+export const useMoveLesson = () => {
+  const invalidate = useInvalidateSchedule();
+  return useMutation({
+    mutationFn: ({ id, startsAt, durationMin }: { id: string; startsAt: Date; durationMin: number }) =>
+      api.patch<unknown>(`/api/admin/lessons/${id}`, { startsAt: startsAt.toISOString(), durationMin }),
+    onSuccess: invalidate,
+  });
+};
+
+/** Правило с даты fromDate: старое заканчивается накануне, будущие немодифицированные занятия переезжают. */
+export const useChangeSeries = () => {
+  const invalidate = useInvalidateSchedule();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...body
+    }: Pick<Series, 'id' | 'weekday' | 'startTime' | 'durationMin' | 'timezone'> & { fromDate: string }) =>
+      api.post<Series>(`/api/admin/series/${id}/change`, body),
+    onSuccess: invalidate,
+  });
+};
+
+/** Завершить правило: занятий не будет начиная с fromDate. */
+export const useEndSeries = () => {
+  const invalidate = useInvalidateSchedule();
+  return useMutation({
+    mutationFn: ({ id, fromDate }: { id: string; fromDate: string }) =>
+      api.post<void>(`/api/admin/series/${id}/end`, { fromDate }),
+    onSuccess: invalidate,
+  });
+};
+
+/** Удаление навсегда — только разовые; регулярные бэк не даст удалить (409), их отменяют. */
+export const useDeleteLesson = () => {
+  const qc = useQueryClient();
+  const invalidate = useInvalidateSchedule();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<void>(`/api/admin/lessons/${id}`),
+    onSuccess: (_, id) => {
+      qc.removeQueries({ queryKey: ['lessons', 'one', id] });
+      return invalidate();
+    },
+  });
+};
+
+/** Отмена и возврат: бэк отдаёт обновлённое занятие. */
+export const useLessonStatus = (action: 'cancel' | 'restore') => {
+  const invalidate = useInvalidateSchedule();
+  return useMutation({
+    mutationFn: (id: string) => api.post<Lesson>(`/api/admin/lessons/${id}/${action}`),
+    onSuccess: invalidate,
+  });
+};
+
+export const useLesson = (id: MaybeRefOrGetter<string>) =>
+  useQuery({
+    queryKey: computed(() => ['lessons', 'one', toValue(id)]),
+    queryFn: () => api.get<Lesson>(`/api/admin/lessons/${toValue(id)}`),
+  });
+
 export const lessonEnd = (l: Pick<Lesson, 'startsAt' | 'durationMin'>) =>
   new Date(new Date(l.startsAt).getTime() + l.durationMin * 60_000);
 
@@ -75,6 +136,22 @@ export const fromIsoDateTime = (date: string, time = '00:00') => {
 
 /** ISO-день недели: 1 — понедельник … 7 — воскресенье. */
 export const isoWeekday = (d: Date) => ((d.getDay() + 6) % 7) + 1;
+
+export const DURATIONS = [45, 60, 90, 120].map(m => ({ value: m, label: `${m} мин` }));
+
+// «Каждую среду», «Каждый вторник», «Каждое воскресенье»
+const EVERY = [
+  'Каждый понедельник',
+  'Каждый вторник',
+  'Каждую среду',
+  'Каждый четверг',
+  'Каждую пятницу',
+  'Каждую субботу',
+  'Каждое воскресенье',
+];
+/** ISO-день недели (1 — понедельник) → «Каждую среду». */
+export const everyIsoWeekday = (weekday: number) => EVERY[weekday - 1]!;
+export const everyWeekday = (d: Date) => everyIsoWeekday(((d.getDay() + 6) % 7) + 1);
 
 export const formatTime = (d: Date) => d.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
 

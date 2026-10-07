@@ -1,8 +1,9 @@
 <template>
   <div :class="tiles ? 'flex flex-col gap-1.5 p-2' : 'overflow-hidden'" class="card">
-    <div
+    <RouterLink
       v-for="(l, i) in lessons"
       :key="l.id"
+      :to="`/lessons/${l.id}`"
       :class="[
         tiles ? 'rounded-2xl' : i > 0 && 'border-t border-line-soft',
         l.id === highlight && 'bg-accent',
@@ -37,7 +38,7 @@
       <UiChip v-else-if="movedFrom(l)" tone="warn">
         Перенесено с {{ movedFrom(l)!.toLocaleDateString('ru', { weekday: 'short' }) }}
       </UiChip>
-    </div>
+    </RouterLink>
     <p v-if="!lessons.length" :class="tiles ? 'px-2.5 py-4' : 'px-4.5 py-6'" class="text-center text-[15px] text-muted">
       {{ empty }}
     </p>

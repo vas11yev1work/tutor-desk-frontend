@@ -82,11 +82,12 @@
               <span class="font-mono text-[13px] text-muted">{{ day.date.getDate() }}</span>
               <UiChip v-if="day.isToday" tone="accent" size="sm" class="ml-auto">сегодня</UiChip>
             </div>
-            <div
+            <RouterLink
               v-for="item in day.items"
               :key="item.key"
+              :to="`/lessons/${item.id}`"
               :class="day.isToday ? 'bg-ink text-white' : 'bg-[#f4f5f7]'"
-              class="flex flex-col gap-0.5 rounded-[10px] px-2.5 py-2 text-[13px]"
+              class="flex flex-col gap-0.5 rounded-[10px] px-2.5 py-2 text-[13px] hover:brightness-95"
             >
               <span
                 :class="[item.struck ? 'text-subtle line-through' : day.isToday ? 'text-white/75' : 'text-label']"
@@ -99,7 +100,7 @@
               <span v-if="item.caption" :class="day.isToday ? 'text-white/70' : 'text-[#6b6f86]'" class="text-[11.5px]">
                 {{ item.caption }}
               </span>
-            </div>
+            </RouterLink>
             <div v-if="!day.items.length" class="px-2.5 py-2 text-[13px] text-subtle">Выходной</div>
           </div>
         </div>
@@ -200,6 +201,7 @@ const week = computed(() => {
         const to = new Date(l.startsAt);
         out.push({
           key: `${l.id}-from`,
+          id: l.id,
           at: original,
           time: formatTime(original),
           name,
@@ -213,6 +215,7 @@ const week = computed(() => {
         const clash = clashes.value.has(l.id);
         out.push({
           key: l.id,
+          id: l.id,
           at: new Date(l.startsAt),
           time: formatTime(new Date(l.startsAt)),
           name,

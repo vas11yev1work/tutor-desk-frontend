@@ -100,11 +100,12 @@
             <span class="font-mono text-[13px] text-label">{{ day.date.getDate() }}</span>
             <span v-if="day.liveCount" class="ml-auto font-mono text-[11px] text-label">{{ day.liveCount }}</span>
           </div>
-          <div
+          <RouterLink
             v-for="item in day.items"
             :key="item.key"
+            :to="`/lessons/${item.lesson.id}`"
             :class="KIND[item.kind].block"
-            class="flex flex-col gap-0.5 rounded-xl px-2.75 py-2.25 text-[13.5px] leading-[1.3]"
+            class="flex flex-col gap-0.5 rounded-xl px-2.75 py-2.25 text-[13.5px] leading-[1.3] hover:brightness-97"
           >
             <span
               :class="[KIND[item.kind].time, isStruck(item) && 'line-through']"
@@ -115,7 +116,7 @@
             <b :class="isStruck(item) && 'line-through'" class="font-semibold">{{ item.lesson.student.name }}</b>
             <span class="text-xs opacity-85">{{ item.caption }}</span>
             <span v-if="!item.lesson.seriesId" class="text-xs opacity-85">Разовое</span>
-          </div>
+          </RouterLink>
           <div
             v-if="!day.items.length"
             class="rounded-xl border-[1.5px] border-dashed border-[#cdd0da] px-2.5 py-3 text-[13px] text-muted"
@@ -152,11 +153,12 @@
           Выходной — занятий нет
         </div>
         <div v-else :class="day.isToday && 'border-ink!'" class="flex flex-col overflow-hidden card">
-          <div
+          <RouterLink
             v-for="(item, j) in day.items"
             :key="item.key"
+            :to="`/lessons/${item.lesson.id}`"
             :class="j > 0 && 'border-t border-line-soft'"
-            class="flex items-center gap-3 px-3.5 py-3"
+            class="flex items-center gap-3 px-3.5 py-3 hover:bg-hover"
           >
             <div :class="isStruck(item) && 'line-through'" class="w-11.5 flex-none font-mono text-sm font-semibold">
               {{ formatTime(item.start) }}
@@ -171,7 +173,7 @@
             <UiChip v-if="KIND[item.kind].chip" :tone="KIND[item.kind].chip!.tone">
               {{ KIND[item.kind].chip!.label }}
             </UiChip>
-          </div>
+          </RouterLink>
         </div>
       </section>
     </div>

@@ -68,7 +68,7 @@
               type="button"
               :disabled="regenerating"
               class="flex min-h-9 cursor-pointer items-center gap-1.5 self-start px-0.5 text-[13.5px] font-medium text-white/72 hover:text-white disabled:opacity-60"
-              @click="regenerateLink"
+              @click="confirmingRegenerate = true"
             >
               Перевыпустить — старая перестанет работать
             </button>
@@ -78,7 +78,7 @@
             <UiButton variant="light" size="sm" class="flex-1" @click="editing = true">
               <Pencil :size="16" :stroke-width="2" aria-hidden="true" />Изменить
             </UiButton>
-            <UiButton variant="danger" size="sm" :loading="deleting" @click="remove">
+            <UiButton variant="danger" size="sm" @click="confirmingDelete = true">
               <Trash2 :size="16" :stroke-width="2" aria-hidden="true" />Удалить
             </UiButton>
           </div>
@@ -118,11 +118,12 @@
             </button>
           </div>
           <div class="flex flex-col overflow-hidden card">
-            <div
+            <RouterLink
               v-for="(l, i) in upcoming"
               :key="l.id"
+              :to="`/lessons/${l.id}`"
               :class="i > 0 && 'border-t border-line-soft'"
-              class="flex items-center gap-3.5 px-3.5 py-3 md:px-4.5"
+              class="flex items-center gap-3.5 px-3.5 py-3 hover:bg-hover md:px-4.5"
             >
               <div class="w-12.5 flex-none">
                 <div class="font-mono text-sm font-semibold">
@@ -140,7 +141,7 @@
               </div>
               <UiChip v-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
               <UiChip v-else-if="l.isModified" tone="warn">Перенос</UiChip>
-            </div>
+            </RouterLink>
             <p v-if="lessons && !upcoming.length" class="px-4.5 py-6 text-center text-[15px] text-muted">
               Ближайших занятий нет
             </p>
@@ -150,6 +151,25 @@
     </div>
 
     <StudentFormDialog v-if="student" v-model:open="editing" :student="student" />
+    <UiConfirmDialog
+      v-model:open="confirmingRegenerate"
+      title="Перевыпустить ссылку?"
+      confirm-label="Перевыпустить"
+      :loading="regenerating"
+      @confirm="regenerateLink"
+    >
+      Старая ссылка сразу перестанет работать — новую нужно будет отправить ученику.
+    </UiConfirmDialog>
+    <UiConfirmDialog
+      v-if="student"
+      v-model:open="confirmingDelete"
+      title="Удалить ученика?"
+      confirm-label="Удалить"
+      :loading="deleting"
+      @confirm="remove"
+    >
+      {{ student.name }} пропадёт навсегда вместе со всеми занятиями. Вернуть не получится.
+    </UiConfirmDialog>
     <NewLessonDialog v-model:open="addingLesson" :default-student-id="id" />
   </div>
 </template>
@@ -167,6 +187,7 @@ import StudentFormDialog from '@/components/StudentFormDialog.vue';
 import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
+import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue';
 import { addDays, formatTime, lessonEnd, sameDay, startOfDay } from '@/features/lessons';
 import {
   EXAM_LABEL,
@@ -206,18 +227,19 @@ const copyLink = async () => {
 };
 
 const { mutate: regenerate, isPending: regenerating } = useRegenerateToken(id);
-const regenerateLink = () => {
-  if (!confirm('Перевыпустить ссылку? Старая перестанет работать.')) return;
+const confirmingRegenerate = ref(false);
+const regenerateLink = () =>
   regenerate(undefined, {
-    onSuccess: () => toast.success('Новая ссылка готова'),
+    onSuccess: () => {
+      confirmingRegenerate.value = false;
+      toast.success('Новая ссылка готова');
+    },
     onError: () => toast.error('Не удалось перевыпустить ссылку'),
   });
-};
 
 const { mutate: deleteStudent, isPending: deleting } = useDeleteStudent(id);
-const remove = () => {
-  if (!student.value || !confirm(`Удалить ученика «${student.value.name}» навсегда? Все его занятия тоже удалятся.`))
-    return;
+const confirmingDelete = ref(false);
+const remove = () =>
   deleteStudent(undefined, {
     onSuccess: () => {
       toast.success('Ученик удалён');
@@ -225,7 +247,6 @@ const remove = () => {
     },
     onError: () => toast.error('Не удалось удалить ученика'),
   });
-};
 
 // Ближайшие 3 занятия, которые ещё не закончились.
 const now = new Date();

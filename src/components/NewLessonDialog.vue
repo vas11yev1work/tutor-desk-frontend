@@ -67,6 +67,7 @@ import UiSelect from '@/components/ui/UiSelect.vue';
 import UiTextField from '@/components/ui/UiTextField.vue';
 import {
   addDays,
+  DURATIONS,
   findOverlap,
   formatTime,
   fromIsoDateTime,
@@ -90,7 +91,6 @@ const KINDS = [
   { value: 'once' as const, label: 'Разовое' },
 ];
 const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'].map((label, i) => ({ value: i + 1, label }));
-const DURATIONS = [45, 60, 90, 120].map(m => ({ value: m, label: `${m} мин` }));
 // «по субботам 12:30–13:30»
 const ON_WEEKDAYS = ['понедельникам', 'вторникам', 'средам', 'четвергам', 'пятницам', 'субботам', 'воскресеньям'];
 
