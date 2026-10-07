@@ -152,6 +152,35 @@
             </p>
           </div>
         </section>
+
+        <!-- Пробники: баллов на бэке пока нет. Когда появятся — справа балл у оценённых и «Внести» у остальных. -->
+        <section v-if="mocks?.length || student.exam" class="flex flex-col gap-2.5">
+          <h2 class="px-1 section-title">Пробники</h2>
+          <div class="flex flex-col overflow-hidden card">
+            <RouterLink
+              v-for="(m, i) in [...(mocks ?? [])].reverse()"
+              :key="m.id"
+              :to="`/lessons/${m.lessonId}`"
+              :class="i > 0 && 'border-t border-line-soft'"
+              class="flex items-center gap-3.5 bg-[#fff5f2] px-3.5 py-3 hover:brightness-98 md:px-4.5"
+            >
+              <div
+                class="flex size-11 flex-none items-center justify-center rounded-[14px] bg-danger-soft font-display text-base text-danger"
+              >
+                {{ m.number }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="text-[15px] font-semibold">Пробник {{ m.number }}</div>
+                <div class="truncate text-[13px] text-muted">
+                  {{ shortDate(m.lessonStartsAt) }} · {{ m.fileName }}
+                </div>
+              </div>
+            </RouterLink>
+            <p v-if="mocks && !mocks.length" class="px-4.5 py-6 text-center text-[15px] text-muted">
+              Пробников пока нет — их выдают на странице занятия
+            </p>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -201,6 +230,7 @@ import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue';
+import { useStudentMocks } from '@/features/assignments';
 import { addDays, formatTime, lessonEnd, sameDay, startOfDay } from '@/features/lessons';
 import {
   EXAM_LABEL,
@@ -270,6 +300,10 @@ const { data: lessons } = useStudentLessons(id, { from: startOfDay(now), to: add
 const upcoming = computed(() => (lessons.value ?? []).filter(l => lessonEnd(l) > now).slice(0, 3));
 
 const { data: series } = useStudentSeries(id);
+
+const { data: mocks } = useStudentMocks(id);
+const shortDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('ru', { day: 'numeric', month: 'short' }).replace('.', '');
 
 const weekday = (d: Date, style: 'short' | 'long') => d.toLocaleDateString('ru', { weekday: style });
 const dayLabel = (d: Date) => `${weekday(d, 'short')} ${d.getDate()}`;

@@ -45,11 +45,14 @@ export const useUploadToLesson = () => {
   });
 };
 
-/** Пробники ученика по порядку выдачи: number — «Пробник 3». */
+/** Пробник ученика: number — «Пробник 3» по порядку выдачи, lessonStartsAt — когда занятие, к которому он выдан. */
+export type Mock = Assignment & { number: number; lessonStartsAt: string };
+
+/** Пробники ученика по порядку выдачи. */
 export const useStudentMocks = (studentId: MaybeRefOrGetter<string>) =>
   useQuery({
     queryKey: computed(() => ['mocks', toValue(studentId)]),
-    queryFn: () => api.get<(Assignment & { number: number })[]>(`/api/admin/students/${toValue(studentId)}/mocks`),
+    queryFn: () => api.get<Mock[]>(`/api/admin/students/${toValue(studentId)}/mocks`),
   });
 
 export const useDeleteAssignment = () => {
