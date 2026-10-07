@@ -18,117 +18,115 @@
 
     <div
       v-if="lesson && start"
-      class="flex flex-col gap-5.5 md:grid md:grid-cols-[minmax(300px,1fr)_minmax(0,1.7fr)] md:items-start"
+      class="grid grid-cols-[minmax(0,1fr)] items-start gap-5.5 [grid-template-areas:'card'_'hw'_'acts'] min-[1200px]:grid-cols-[minmax(300px,1fr)_minmax(0,1.7fr)] min-[1200px]:[grid-template-areas:'card_hw'_'acts_hw']"
     >
-      <!-- Левая колонка, как в макете: карточка и действия под ней. Правая — под домашку, когда она появится. -->
-      <div class="flex flex-col gap-5.5">
-        <!-- Карточка занятия -->
-        <section class="flex flex-col gap-4.5 rounded-[26px] bg-paper p-5.5 text-white">
-          <div class="flex flex-col gap-1.5">
-            <div class="font-mono text-xs tracking-[0.08em] text-accent uppercase">{{ dateLabel }}</div>
-            <div
-              :class="cancelled && 'line-through decoration-2'"
-              class="font-display text-4xl leading-[1.05] font-semibold tracking-[-0.02em] md:text-[44px]"
-            >
-              {{ formatTime(start) }}<span class="text-white/45"> – {{ formatTime(lessonEnd(lesson)) }}</span>
-            </div>
-          </div>
-
-          <RouterLink
-            :to="`/students/${lesson.student.id}`"
-            class="flex items-center gap-3 rounded-[14px] border border-[#48495a] bg-ink p-3 hover:border-white/40"
+      <!-- От 1200px как в макете: слева карточка и действия, справа домашка (сайдбар съедает 240px).
+           Уже — один столбец: карточка, домашка, действия. -->
+      <section class="flex flex-col gap-4.5 rounded-[26px] bg-paper p-5.5 text-white [grid-area:card]">
+        <div class="flex flex-col gap-1.5">
+          <div class="font-mono text-xs tracking-[0.08em] text-accent uppercase">{{ dateLabel }}</div>
+          <div
+            :class="cancelled && 'line-through decoration-2'"
+            class="font-display text-4xl leading-[1.05] font-semibold tracking-[-0.02em] md:text-[44px]"
           >
-            <UiAvatar :name="lesson.student.name" :tone="EXAM_TONE[lesson.student.exam ?? 'none']" />
-            <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-              <div class="text-[17px] font-bold">{{ lesson.student.name }}</div>
-              <div class="text-[13px] text-white/72">{{ studentLine }}</div>
-            </div>
-            <ChevronRight :size="20" :stroke-width="2" aria-hidden="true" />
-          </RouterLink>
+            {{ formatTime(start) }}<span class="text-white/45"> – {{ formatTime(lessonEnd(lesson)) }}</span>
+          </div>
+        </div>
 
-          <div class="flex flex-wrap gap-2">
-            <UiChip v-if="cancelled" tone="danger">Отменено</UiChip>
-            <UiChip v-if="lesson.seriesId" tone="glass">
-              <Repeat :size="14" :stroke-width="2" aria-hidden="true" />
-              {{ everyLabel }}
-            </UiChip>
-            <UiChip v-else tone="glass"><Dot :size="14" :stroke-width="4" aria-hidden="true" />Разовое</UiChip>
-            <UiChip tone="glass">
-              {{ lesson.durationMin }} {{ pluralize(lesson.durationMin, ['минута', 'минуты', 'минут']) }}
-            </UiChip>
-            <UiChip v-if="movedNote" tone="warn">{{ movedNote }}</UiChip>
+        <RouterLink
+          :to="`/students/${lesson.student.id}`"
+          class="flex items-center gap-3 rounded-[14px] border border-[#48495a] bg-ink p-3 hover:border-white/40"
+        >
+          <UiAvatar :name="lesson.student.name" :tone="EXAM_TONE[lesson.student.exam ?? 'none']" />
+          <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+            <div class="text-[17px] font-bold">{{ lesson.student.name }}</div>
+            <div class="text-[13px] text-white/72">{{ studentLine }}</div>
+          </div>
+          <ChevronRight :size="20" :stroke-width="2" aria-hidden="true" />
+        </RouterLink>
+
+        <div class="flex flex-wrap gap-2">
+          <UiChip v-if="cancelled" tone="danger">Отменено</UiChip>
+          <UiChip v-if="lesson.seriesId" tone="glass">
+            <Repeat :size="14" :stroke-width="2" aria-hidden="true" />
+            {{ everyLabel }}
+          </UiChip>
+          <UiChip v-else tone="glass"><Dot :size="14" :stroke-width="4" aria-hidden="true" />Разовое</UiChip>
+          <UiChip tone="glass">
+            {{ lesson.durationMin }} {{ pluralize(lesson.durationMin, ['минута', 'минуты', 'минут']) }}
+          </UiChip>
+          <UiChip v-if="movedNote" tone="warn">{{ movedNote }}</UiChip>
+        </div>
+      </section>
+
+      <div class="flex min-w-0 flex-col gap-5.5 [grid-area:hw]">
+        <HomeworkSection :lesson="lesson" />
+      </div>
+
+      <!-- Действия -->
+      <div class="flex flex-col gap-5.5 [grid-area:acts]">
+        <section class="flex flex-col gap-2.5">
+          <h2 class="px-1 section-title">Это занятие</h2>
+          <div class="flex flex-col overflow-hidden card">
+            <UiActionRow
+              v-if="!cancelled"
+              title="Перенести"
+              :hint="
+                lesson.seriesId
+                  ? `Только ${fmt(start, { day: 'numeric', month: 'long' })}, остальные не изменятся`
+                  : 'Выбрать новую дату и время'
+              "
+              @click="moving = true"
+            >
+              <template #icon><ArrowRightLeft :size="18" :stroke-width="1.9" /></template>
+            </UiActionRow>
+            <UiActionRow
+              v-if="!cancelled"
+              title="Отменить"
+              hint="Ученик увидит отмену в кабинете"
+              danger
+              :disabled="isPending"
+              @click="cancel"
+            >
+              <template #icon><X :size="18" :stroke-width="1.9" /></template>
+            </UiActionRow>
+            <UiActionRow
+              v-else
+              title="Вернуть занятие"
+              hint="Снова появится в расписании ученика"
+              :disabled="isPending"
+              @click="restore"
+            >
+              <template #icon><RotateCcw :size="18" :stroke-width="1.9" /></template>
+            </UiActionRow>
+            <UiActionRow
+              v-if="!lesson.seriesId"
+              title="Удалить занятие"
+              hint="Пропадёт из расписания у вас и у ученика — без пометки «отменено»"
+              danger
+              :disabled="deleting"
+              @click="confirmingDelete = true"
+            >
+              <template #icon><Trash2 :size="18" :stroke-width="1.9" /></template>
+            </UiActionRow>
           </div>
         </section>
 
-        <!-- Действия -->
-        <div class="flex flex-col gap-5.5">
-          <section class="flex flex-col gap-2.5">
-            <h2 class="px-1 section-title">Это занятие</h2>
-            <div class="flex flex-col overflow-hidden card">
-              <UiActionRow
-                v-if="!cancelled"
-                title="Перенести"
-                :hint="
-                  lesson.seriesId
-                    ? `Только ${fmt(start, { day: 'numeric', month: 'long' })}, остальные не изменятся`
-                    : 'Выбрать новую дату и время'
-                "
-                @click="moving = true"
-              >
-                <template #icon><ArrowRightLeft :size="18" :stroke-width="1.9" /></template>
-              </UiActionRow>
-              <UiActionRow
-                v-if="!cancelled"
-                title="Отменить"
-                hint="Ученик увидит отмену в кабинете"
-                danger
-                :disabled="isPending"
-                @click="cancel"
-              >
-                <template #icon><X :size="18" :stroke-width="1.9" /></template>
-              </UiActionRow>
-              <UiActionRow
-                v-else
-                title="Вернуть занятие"
-                hint="Снова появится в расписании ученика"
-                :disabled="isPending"
-                @click="restore"
-              >
-                <template #icon><RotateCcw :size="18" :stroke-width="1.9" /></template>
-              </UiActionRow>
-              <UiActionRow
-                v-if="!lesson.seriesId"
-                title="Удалить занятие"
-                hint="Пропадёт из расписания у вас и у ученика — без пометки «отменено»"
-                danger
-                :disabled="deleting"
-                @click="confirmingDelete = true"
-              >
-                <template #icon><Trash2 :size="18" :stroke-width="1.9" /></template>
-              </UiActionRow>
-            </div>
-          </section>
-
-          <section v-if="lesson.seriesId" class="flex flex-col gap-2.5">
-            <h2 class="px-1 section-title">Регулярное расписание</h2>
-            <div class="flex flex-col overflow-hidden card">
-              <UiActionRow
-                title="Изменить с даты"
-                hint="Новый день, время или длительность"
-                @click="editSeries('edit')"
-              >
-                <template #icon><Calendar :size="18" :stroke-width="1.9" /></template>
-              </UiActionRow>
-              <UiActionRow
-                title="Завершить регулярные"
-                hint="Последнее занятие — выберете дату"
-                @click="editSeries('end')"
-              >
-                <template #icon><Square :size="18" :stroke-width="1.9" /></template>
-              </UiActionRow>
-            </div>
-          </section>
-        </div>
+        <section v-if="lesson.seriesId" class="flex flex-col gap-2.5">
+          <h2 class="px-1 section-title">Регулярное расписание</h2>
+          <div class="flex flex-col overflow-hidden card">
+            <UiActionRow title="Изменить с даты" hint="Новый день, время или длительность" @click="editSeries('edit')">
+              <template #icon><Calendar :size="18" :stroke-width="1.9" /></template>
+            </UiActionRow>
+            <UiActionRow
+              title="Завершить регулярные"
+              hint="Последнее занятие — выберете дату"
+              @click="editSeries('end')"
+            >
+              <template #icon><Square :size="18" :stroke-width="1.9" /></template>
+            </UiActionRow>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -167,6 +165,7 @@ import { toast } from 'vue-sonner';
 
 import { ApiError } from '@/api/client';
 import EditSeriesDialog from '@/components/EditSeriesDialog.vue';
+import HomeworkSection from '@/components/HomeworkSection.vue';
 import MoveLessonDialog from '@/components/MoveLessonDialog.vue';
 import UiActionRow from '@/components/ui/UiActionRow.vue';
 import UiAvatar from '@/components/ui/UiAvatar.vue';

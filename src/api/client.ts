@@ -1,4 +1,4 @@
-const BASE_URL: string = import.meta.env.VITE_API_URL ?? '';
+export const BASE_URL: string = import.meta.env.VITE_API_URL ?? '';
 
 export class ApiError extends Error {
   constructor(
@@ -24,8 +24,12 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     res = await fetch(BASE_URL + path, {
       method,
       credentials: 'include',
-      headers: { Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      // FormData уходит как есть — Content-Type с boundary проставит браузер.
+      headers: {
+        Accept: 'application/json',
+        ...(body === undefined || body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+      },
+      body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body),
     });
   } catch (e) {
     throw new ApiError(0, 'network', e instanceof Error ? e.message : 'Network error');

@@ -27,6 +27,17 @@ export interface Student {
 
 export type LessonStatus = 'scheduled' | 'cancelled';
 
+/** PDF-задание: домашка или пробник. Файл — GET /api/admin/assignments/:id/file. */
+export interface Assignment {
+  id: string;
+  kind: 'homework' | 'mock';
+  lessonId: string | null;
+  fileName: string;
+  /** Байты. */
+  size: number;
+  createdAt: string;
+}
+
 /** GET /api/admin/lessons?from=&to= — перенесённое приходит и в старом, и в новом диапазоне. */
 export interface Lesson {
   id: string;
@@ -38,6 +49,8 @@ export interface Lesson {
   originalStartsAt: string | null;
   isModified: boolean;
   student: Pick<Student, 'id' | 'name' | 'grade' | 'exam'>;
+  /** Домашки и пробники занятия, по порядку загрузки. */
+  assignments: Assignment[];
 }
 
 /** GET /api/admin/students/:id/series — действующие правила, по одному на день недели. */

@@ -14,6 +14,7 @@ const lesson = (id: string, startsAt: string, p: Partial<Lesson> = {}): Lesson =
   originalStartsAt: startsAt,
   isModified: false,
   student: { id: id, name: `Ученик ${id}`, grade: 11, exam: 'oge' },
+  assignments: [],
   ...p,
 });
 

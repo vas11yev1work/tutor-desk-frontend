@@ -13,6 +13,7 @@ const lesson = (p: Partial<Lesson>): Lesson => ({
   originalStartsAt: null,
   isModified: false,
   student: { id: 'st', name: 'Маша Соколова', grade: 11, exam: 'ege_profile' },
+  assignments: [],
   ...p,
 });
 
