@@ -1,0 +1,26 @@
+# Dependencies
+node_modules
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage
+
+# Build outputs
+dist
+
+# Debug
+npm-debug.log*
+
+# Misc
+.DS_Store
+*.pem
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.sw?
