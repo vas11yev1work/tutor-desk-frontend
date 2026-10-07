@@ -44,7 +44,14 @@
         <h2 class="section-title">Сегодня</h2>
         <span v-if="today.length" class="font-mono text-[13px] text-muted">{{ todayRange }}</span>
       </div>
-      <LessonList :lessons="today" :now="now" :highlight="next?.id" tiles empty="На сегодня занятий нет" />
+      <LessonList
+        :lessons="today"
+        :now="now"
+        :highlight="next?.id"
+        :clashes="clashes"
+        tiles
+        empty="На сегодня занятий нет"
+      />
     </section>
 
     <section class="flex flex-col gap-3 md:hidden">
@@ -52,7 +59,7 @@
         <h2 class="section-title">Завтра</h2>
         <span class="font-mono text-[13px] text-muted">{{ tomorrowLabel }}</span>
       </div>
-      <LessonList :lessons="tomorrow" :now="now" with-duration empty="Завтра занятий нет" />
+      <LessonList :lessons="tomorrow" :now="now" :clashes="clashes" with-duration empty="Завтра занятий нет" />
     </section>
 
     <section class="hidden flex-col gap-3.5 md:flex">
@@ -83,9 +90,10 @@
             >
               <span
                 :class="[item.struck ? 'text-subtle line-through' : day.isToday ? 'text-white/75' : 'text-label']"
-                class="font-mono text-xs font-semibold"
+                class="flex items-center gap-1.5 font-mono text-xs font-semibold"
               >
                 {{ item.time }}
+                <i v-if="item.clash" class="size-1.5 rounded-full bg-alert" aria-hidden="true" />
               </span>
               <span :class="item.struck && 'text-subtle line-through'">{{ item.name }}</span>
               <span v-if="item.caption" :class="day.isToday ? 'text-white/70' : 'text-[#6b6f86]'" class="text-[11.5px]">
@@ -125,7 +133,7 @@ import {
   startOfWeek,
   useLessons,
 } from '@/features/lessons';
-import { formatWeekRange } from '@/features/lessons/week';
+import { clashIds, formatWeekRange } from '@/features/lessons/week';
 
 // Раз в минуту: «через 2 ч», подсветка ближайшего и смена дня в полночь.
 const adding = ref(false);
@@ -177,6 +185,8 @@ const shortName = (name: string) => {
   return last ? `${first} ${last[0]}.` : name;
 };
 
+const clashes = computed(() => clashIds(data.value ?? []));
+
 const week = computed(() => {
   const from = startOfWeek(now.value);
   const lessons = data.value ?? [];
@@ -194,18 +204,21 @@ const week = computed(() => {
           time: formatTime(original),
           name,
           struck: true,
+          clash: false,
           caption: `перенос на ${fmt(to, { weekday: 'short' })}`,
         });
       }
       if (sameDay(new Date(l.startsAt), date)) {
         const cancelled = l.status === 'cancelled';
+        const clash = clashes.value.has(l.id);
         out.push({
           key: l.id,
           at: new Date(l.startsAt),
           time: formatTime(new Date(l.startsAt)),
           name,
           struck: cancelled,
-          caption: cancelled ? 'отмена' : '',
+          clash,
+          caption: cancelled ? 'отмена' : clash ? 'пересечение' : '',
         });
       }
       return out;

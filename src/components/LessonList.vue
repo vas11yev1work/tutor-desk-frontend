@@ -33,6 +33,7 @@
         {{ new Date(l.startsAt) <= now ? 'идёт' : formatIn(now, new Date(l.startsAt)) }}
       </span>
       <UiChip v-else-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
+      <UiChip v-else-if="clashes?.has(l.id)" tone="alert">Пересечение</UiChip>
       <UiChip v-else-if="movedFrom(l)" tone="warn">
         Перенесено с {{ movedFrom(l)!.toLocaleDateString('ru', { weekday: 'short' }) }}
       </UiChip>
@@ -56,6 +57,8 @@ defineProps<{
   highlight?: string;
   /** Строки — отдельные скруглённые плашки без разделителей. */
   tiles?: boolean;
+  /** Id занятий с пересечением — коралловый чип. */
+  clashes?: Set<string>;
   /** «ОГЭ · 90 мин» вместо времени окончания. */
   withDuration?: boolean;
   empty: string;

@@ -34,9 +34,20 @@ const range = (start: Date, end: Date) => `${formatTime(start)}–${formatTime(e
 /** «ЕГЭ профиль · 60 мин», «7 класс · 90 мин»; разовое отмечается отдельной строкой в разметке. */
 const caption = (l: Lesson) => [studentCaption(l.student), `${l.durationMin} мин`].filter(Boolean).join(' · ');
 
+/** Id занятий, которые состоятся и пересекаются с другим таким же — независимо от того, прошли они или нет. */
+export const clashIds = (lessons: Lesson[]) => {
+  const live = lessons.filter(l => l.status === 'scheduled');
+  const ids = new Set<string>();
+  for (const a of live)
+    for (const b of live)
+      if (a !== b && new Date(a.startsAt) < lessonEnd(b) && new Date(b.startsAt) < lessonEnd(a)) ids.add(a.id);
+  return ids;
+};
+
 /** Неделя с понедельника `from`: занятия по дням, перенесённое — в обоих днях, пересечения помечены. */
-export const buildWeek = (lessons: Lesson[], from: Date, now: Date): WeekDay[] =>
-  Array.from({ length: 7 }, (_, i) => {
+export const buildWeek = (lessons: Lesson[], from: Date, now: Date): WeekDay[] => {
+  const clashes = clashIds(lessons);
+  return Array.from({ length: 7 }, (_, i) => {
     const date = addDays(from, i);
     const items: WeekItem[] = [];
 
@@ -65,7 +76,7 @@ export const buildWeek = (lessons: Lesson[], from: Date, now: Date): WeekDay[] =
         lesson: l,
         start,
         end,
-        kind: cancelled ? 'cancelled' : end < now ? 'past' : 'normal',
+        kind: cancelled ? 'cancelled' : clashes.has(l.id) ? 'clash' : end < now ? 'past' : 'normal',
         range: range(start, end),
         caption: caption(l),
       });
@@ -73,19 +84,15 @@ export const buildWeek = (lessons: Lesson[], from: Date, now: Date): WeekDay[] =
 
     items.sort((a, b) => a.start.getTime() - b.start.getTime());
 
-    // Пересечения среди занятий, которые состоятся.
-    const live = items.filter(x => x.kind === 'normal' || x.kind === 'past');
-    for (const a of live)
-      for (const b of live) if (a !== b && a.start < b.end && b.start < a.end && a.kind === 'normal') a.kind = 'clash';
-
     return {
       date,
       isToday: sameDay(date, now),
       isPast: date < startOfDay(now),
       items,
-      liveCount: live.length,
+      liveCount: items.filter(x => x.kind !== 'cancelled' && x.kind !== 'movedFrom').length,
     };
   });
+};
 
 /** Пары пересекающихся занятий для плашки-предупреждения. */
 export const findClashes = (days: WeekDay[]) =>

@@ -61,6 +61,11 @@ describe('buildWeek', () => {
   });
 });
 
+it('пересечение отмечается и у прошедших занятий', () => {
+  const week = buildWeek([lesson('a', at(6, 9)), lesson('b', at(6, 9, 30))], monday, now);
+  expect(week[1]!.items.map(x => x.kind)).toEqual(['clash', 'clash']);
+});
+
 describe('formatWeekRange', () => {
   it('один месяц и стык месяцев', () => {
     expect(formatWeekRange(monday)).toBe('5 – 11 октября');
