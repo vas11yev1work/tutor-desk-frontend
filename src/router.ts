@@ -24,6 +24,7 @@ export const router = createRouter({
         { path: 'students', component: () => import('@/pages/StudentsPage.vue') },
         { path: 'students/:id', component: () => import('@/pages/StudentDetailsPage.vue') },
         { path: 'students/:id/mocks/:mockId', component: () => import('@/pages/MockScorePage.vue') },
+        { path: 'students/:id/analytics', component: () => import('@/pages/AnalyticsPage.vue') },
         { path: 'lessons/:id', component: () => import('@/pages/LessonPage.vue') },
       ],
     },

@@ -1,3 +1,6 @@
+import { Check } from '@lucide/vue';
+import type { Component } from 'vue';
+
 import type { Lesson } from '@/api/types';
 import type { Tone } from '@/components/ui/tones';
 import { movedFrom } from '@/features/lessons';
@@ -5,9 +8,15 @@ import { homeworkStatus, type WeekItemKind } from '@/features/lessons/week';
 
 /** Плашка занятия по виду: фон и обводка, цвет времени, чип для списков. Общие для расписания и Main. */
 // Обводки — ring/outline внутрь: не меняют размер, плашки не прыгают при смене недели.
-export const KIND: Record<WeekItemKind, { block: string; time: string; chip?: { label: string; tone: Tone } }> = {
+export type Chip = { label: string; tone: Tone; /** Иконка после текста — галочка у «Домашка». */ icon?: Component };
+
+export const KIND: Record<WeekItemKind, { block: string; time: string; chip?: Chip }> = {
   normal: { block: 'bg-white text-ink ring-1 ring-line ring-inset', time: 'text-label' },
-  homework: { block: 'bg-ink text-white', time: 'text-accent', chip: { label: 'Домашка ✓', tone: 'neutral' } },
+  homework: {
+    block: 'bg-ink text-white',
+    time: 'text-accent',
+    chip: { label: 'Домашка', tone: 'neutral', icon: Check },
+  },
   noHomework: {
     block: 'bg-white text-ink outline-[length:1.5px] outline-offset-[-1.5px] outline-alert outline-dashed',
     time: 'text-danger',
@@ -26,8 +35,6 @@ export const KIND: Record<WeekItemKind, { block: string; time: string; chip?: { 
   },
   clash: { block: 'bg-alert text-ink', time: 'text-ink', chip: { label: 'Пересечение', tone: 'alert' } },
 };
-
-export type Chip = { label: string; tone: Tone };
 
 /**
  * Все чипы занятия, ничего не прячем: пересечение, перенос и домашка — независимые статусы.

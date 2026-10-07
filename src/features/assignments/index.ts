@@ -71,6 +71,21 @@ export const formatTaskRange = (indices: number[]) => {
   return contiguous && nums.length > 1 ? `${nums[0]}–${nums.at(-1)}` : nums.join(', ');
 };
 
+/**
+ * Шкала графика баллов: 5 линий с «круглым» шагом, значения не прижаты к краям.
+ * 11, 13, 16 → 10, 12, 14, 16, 18.
+ */
+export const chartTicks = (values: number[]) => {
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const step = Math.max(1, Math.ceil((hi - lo + 2) / 4));
+  const start = Math.max(0, Math.floor((lo - 1) / step) * step);
+  return Array.from({ length: 5 }, (_, i) => start + i * step);
+};
+
+/** Ячейка тепловой карты: полностью, частично или 0 баллов. */
+export const cellLevel = (score: number, max: number) => (score >= max ? 'full' : score === 0 ? 'zero' : 'partial');
+
 /** Максимумы по заданиям не меняются — грузим один раз. */
 export const useExamMaxScores = () =>
   useQuery({

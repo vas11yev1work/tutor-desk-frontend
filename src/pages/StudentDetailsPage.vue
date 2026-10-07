@@ -96,19 +96,25 @@
 
       <!-- Занятия -->
       <div class="flex min-w-0 flex-col gap-5.5 min-[1200px]:flex-[2_1_520px]">
-        <!-- Последний оценённый пробник -->
-        <div
+        <!-- Последний оценённый пробник — ведёт в аналитику -->
+        <RouterLink
           v-if="lastScored"
-          class="flex flex-col gap-2 rounded-[20px] bg-accent px-4 py-3.5 text-ink md:rounded-3xl md:px-6 md:py-5"
+          :to="`/students/${id}/analytics`"
+          class="flex flex-wrap items-center gap-3.5 rounded-[20px] bg-accent px-4 py-3.5 text-ink hover:brightness-97 md:gap-5 md:rounded-3xl md:px-6 md:py-5"
         >
-          <div class="font-display text-[40px] leading-none font-bold tracking-[-0.02em] md:text-[56px]">
-            {{ lastScored.total }}<span v-if="examMax" class="text-[0.45em] opacity-55"> / {{ examMax }}</span>
+          <div class="flex flex-auto flex-col gap-2">
+            <div class="font-display text-[40px] leading-none font-bold tracking-[-0.02em] md:text-[56px]">
+              {{ lastScored.total }}<span v-if="examMax" class="text-[0.45em] opacity-55"> / {{ examMax }}</span>
+            </div>
+            <div class="font-mono text-[13px] font-semibold">
+              Пробник {{ lastScored.number
+              }}<template v-if="delta !== null"> · {{ delta > 0 ? `+${delta}` : delta }} к прошлому</template>
+            </div>
           </div>
-          <div class="font-mono text-[13px] font-semibold">
-            Пробник {{ lastScored.number
-            }}<template v-if="delta !== null"> · {{ delta > 0 ? `+${delta}` : delta }} к прошлому</template>
-          </div>
-        </div>
+          <span class="flex items-center gap-1 text-sm font-bold">
+            Аналитика <ChevronRight :size="18" :stroke-width="2" aria-hidden="true" />
+          </span>
+        </RouterLink>
 
         <section v-if="series?.length" class="flex flex-col gap-2.5">
           <h2 class="px-1 section-title">Регулярные занятия</h2>
@@ -162,7 +168,9 @@
                 <UiChip v-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
                 <template v-else>
                   <UiChip v-if="l.isModified" tone="warn">Перенос</UiChip>
-                  <UiChip v-if="l.assignments.length">Домашка ✓</UiChip>
+                  <UiChip v-if="l.assignments.length"
+                    >Домашка<Check :size="13" :stroke-width="3" aria-hidden="true"
+                  /></UiChip>
                   <UiChip v-else tone="danger">Нет домашки</UiChip>
                 </template>
               </div>
@@ -250,7 +258,7 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronLeft, ChevronRight, Copy, Pencil, Trash2 } from '@lucide/vue';
+import { Check, ChevronLeft, ChevronRight, Copy, Pencil, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';

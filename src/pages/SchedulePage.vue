@@ -179,7 +179,9 @@
               <div v-if="!item.lesson.seriesId" class="text-[12.5px] text-muted">Разовое</div>
             </div>
             <div class="flex flex-none flex-wrap justify-end gap-1.5">
-              <UiChip v-for="c in itemChips(item)" :key="c.label" :tone="c.tone">{{ c.label }}</UiChip>
+              <UiChip v-for="c in itemChips(item)" :key="c.label" :tone="c.tone">
+                {{ c.label }}<component :is="c.icon" v-if="c.icon" :size="13" :stroke-width="3" aria-hidden="true" />
+              </UiChip>
             </div>
           </RouterLink>
         </div>

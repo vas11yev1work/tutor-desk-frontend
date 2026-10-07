@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { checkPdf, formatFileSize, formatTaskRange, splitParts } from '.';
+import { cellLevel, chartTicks, checkPdf, formatFileSize, formatTaskRange, splitParts } from '.';
 
 describe('assignments', () => {
   it('formatFileSize', () => {
@@ -27,5 +27,22 @@ describe('splitParts', () => {
 
   it('ЕГЭ база: только первая часть', () => {
     expect(splitParts(Array<number>(21).fill(1)).part2).toEqual([]);
+  });
+});
+
+describe('chartTicks', () => {
+  it('5 линий с запасом сверху и снизу', () => {
+    expect(chartTicks([11, 13, 16])).toEqual([10, 12, 14, 16, 18]);
+    expect(chartTicks([20])).toEqual([19, 20, 21, 22, 23]);
+  });
+
+  it('не уходит ниже нуля', () => {
+    expect(chartTicks([0, 3])[0]).toBe(0);
+  });
+});
+
+describe('cellLevel', () => {
+  it('полностью, частично, ноль', () => {
+    expect([cellLevel(1, 1), cellLevel(2, 4), cellLevel(0, 3)]).toEqual(['full', 'partial', 'zero']);
   });
 });

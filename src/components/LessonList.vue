@@ -34,7 +34,9 @@
         {{ highlightLabel(l) }}
       </span>
       <div v-else-if="chipsOf(l).length" class="flex flex-none flex-wrap justify-end gap-1.5">
-        <UiChip v-for="c in chipsOf(l)" :key="c.label" :tone="c.tone">{{ c.label }}</UiChip>
+        <UiChip v-for="c in chipsOf(l)" :key="c.label" :tone="c.tone">
+          {{ c.label }}<component :is="c.icon" v-if="c.icon" :size="13" :stroke-width="3" aria-hidden="true" />
+        </UiChip>
       </div>
     </RouterLink>
     <p v-if="!lessons.length" :class="tiles ? 'px-2.5 py-4' : 'px-4.5 py-6'" class="text-center text-[15px] text-muted">
