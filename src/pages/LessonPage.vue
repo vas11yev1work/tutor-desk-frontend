@@ -235,7 +235,8 @@ const movedNote = computed(() => {
 
 const moving = ref(false);
 // Правило этого занятия — для окна «Регулярное расписание».
-const { data: studentSeries } = useStudentSeries(() => lesson.value?.student.id ?? '');
+// Только у регулярного — разовому правило не нужно.
+const { data: studentSeries } = useStudentSeries(() => (lesson.value?.seriesId ? lesson.value.student.id : ''));
 const lessonSeries = computed(() => studentSeries.value?.find(s => s.id === lesson.value?.seriesId));
 const seriesOpen = ref(false);
 const seriesMode = ref<'edit' | 'end'>('edit');

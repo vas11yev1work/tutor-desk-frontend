@@ -138,10 +138,14 @@
                 <div :class="l.status === 'cancelled' && 'text-muted line-through'" class="text-[15px] font-semibold">
                   {{ dayTitle(new Date(l.startsAt)) }}
                 </div>
-                <div v-if="movedNote(l)" class="text-[13px] text-muted">{{ movedNote(l) }}</div>
+                <div v-if="l.status !== 'cancelled'" class="truncate text-[13px] text-muted">
+                  {{ movedNote(l) || homeworkNote(l) }}
+                </div>
               </div>
               <UiChip v-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
               <UiChip v-else-if="l.isModified" tone="warn">Перенос</UiChip>
+              <UiChip v-else-if="l.assignments.length">Домашка ✓</UiChip>
+              <UiChip v-else tone="danger">Нет домашки</UiChip>
             </RouterLink>
             <p v-if="lessons && !upcoming.length" class="px-4.5 py-6 text-center text-[15px] text-muted">
               Ближайших занятий нет
@@ -275,6 +279,13 @@ const dayTitle = (d: Date) => {
   const w = weekday(d, 'long');
   return w[0]!.toUpperCase() + w.slice(1);
 };
+/** «Логарифмы.pdf», «Логарифмы.pdf и ещё 1» или «Домашки пока нет». */
+const homeworkNote = (l: Lesson) => {
+  const [first, ...rest] = l.assignments;
+  if (!first) return 'Домашки пока нет';
+  return rest.length ? `${first.fileName} и ещё ${rest.length}` : first.fileName;
+};
+
 const movedNote = (l: Lesson) => {
   if (!l.isModified || !l.originalStartsAt) return '';
   const from = new Date(l.originalStartsAt);

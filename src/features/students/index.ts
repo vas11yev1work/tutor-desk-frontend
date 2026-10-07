@@ -92,6 +92,8 @@ export const useStudentSeries = (id: MaybeRefOrGetter<string>) =>
   useQuery({
     queryKey: computed(() => ['series', 'student', toValue(id)]),
     queryFn: () => api.get<Series[]>(`/api/admin/students/${toValue(id)}/series`),
+    // Пустой id — данных ещё нет (занятие грузится), запрос не нужен.
+    enabled: computed(() => !!toValue(id)),
   });
 
 /** 'YYYY-MM-DD' → «1 сентября». */
