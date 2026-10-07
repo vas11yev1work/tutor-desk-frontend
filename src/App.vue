@@ -1,5 +1,10 @@
 <template>
-  <div class="min-h-screen bg-stone-50 text-stone-900">
-    <RouterView />
-  </div>
+  <RouterView />
+  <Toaster position="top-right" />
 </template>
+
+<script setup lang="ts">
+import 'vue-sonner/style.css';
+
+import { Toaster } from 'vue-sonner';
+</script>

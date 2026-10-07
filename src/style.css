@@ -1,1 +1,35 @@
 @import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Onest', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Unbounded', var(--font-sans);
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  --color-surface: #f2f3f5;
+  --color-ink: #14162b;
+  --color-ink-hover: #262946;
+  --color-label: #4a4e68;
+  --color-muted: #5a5e76;
+  --color-line: #d9dce4;
+  --color-line-soft: #edeef2;
+  --color-field: #f7f8fa;
+  --color-accent: #d4f54c;
+  --color-danger: #c4314b;
+}
+
+/* Тёмный «тетрадный лист» в клетку */
+@utility bg-paper {
+  background-color: var(--color-ink);
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: -1px -1px;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
