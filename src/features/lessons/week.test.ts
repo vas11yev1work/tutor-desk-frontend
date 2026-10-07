@@ -26,7 +26,7 @@ describe('buildWeek', () => {
     const moved = lesson('a', at(7, 18, 30), { isModified: true, originalStartsAt: at(5, 18, 30) });
     const week = buildWeek([moved], monday, now);
     expect(week[0]!.items.map(x => [x.kind, x.range])).toEqual([['movedFrom', '18:30–19:30']]);
-    expect(week[2]!.items.map(x => [x.kind, x.range])).toEqual([['normal', '18:30–19:30']]);
+    expect(week[2]!.items.map(x => [x.kind, x.range])).toEqual([['noHomework', '18:30–19:30']]);
     expect(week[0]!.liveCount).toBe(0);
     expect(week[2]!.liveCount).toBe(1);
   });
@@ -44,7 +44,7 @@ describe('buildWeek', () => {
     expect(week[2]!.items.map(x => [x.kind, x.caption])).toEqual([
       ['past', 'ОГЭ · 60 мин'],
       ['cancelled', 'ОГЭ · 60 мин'],
-      ['normal', 'ОГЭ · 60 мин'],
+      ['noHomework', 'ОГЭ · 60 мин'],
     ]);
     expect(week[2]!.liveCount).toBe(2);
   });
@@ -65,6 +65,18 @@ describe('buildWeek', () => {
 it('пересечение отмечается и у прошедших занятий', () => {
   const week = buildWeek([lesson('a', at(6, 9)), lesson('b', at(6, 9, 30))], monday, now);
   expect(week[1]!.items.map(x => x.kind)).toEqual(['clash', 'clash']);
+});
+
+it('домашка: есть — homework, нет и меньше суток — noHomework, позже — normal', () => {
+  const hw = { id: 'h', kind: 'homework' as const, lessonId: 'a', fileName: 'Домашка.pdf', size: 1, createdAt: '' };
+  const week = buildWeek(
+    [lesson('a', at(7, 18), { assignments: [hw] }), lesson('b', at(8, 10)), lesson('c', at(9, 10))],
+    monday,
+    now,
+  );
+  expect(week[2]!.items[0]!.kind).toBe('homework');
+  expect(week[3]!.items[0]!.kind).toBe('noHomework');
+  expect(week[4]!.items[0]!.kind).toBe('normal');
 });
 
 describe('formatWeekRange', () => {

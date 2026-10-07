@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Lesson } from '@/api/types';
 
-import { findOverlap, formatIn, fromIsoDateTime, isoWeekday, movedFrom, pluralize, startOfWeek, toIsoDate } from '.';
+import { findOverlap, formatUntil, fromIsoDateTime, isoWeekday, movedFrom, pluralize, startOfWeek, toIsoDate } from '.';
 
 const lesson = (p: Partial<Lesson>): Lesson => ({
   id: '1',
@@ -23,10 +23,10 @@ describe('lessons helpers', () => {
     expect(startOfWeek(new Date(2026, 9, 11, 23))).toEqual(new Date(2026, 9, 5));
   });
 
-  it('formatIn', () => {
+  it('formatUntil', () => {
     const at = new Date(2026, 9, 7, 13, 30);
-    expect(formatIn(at, new Date(2026, 9, 7, 14, 10))).toBe('через 40 мин');
-    expect(formatIn(at, new Date(2026, 9, 7, 15, 30))).toBe('через 2 ч');
+    expect(formatUntil(at, new Date(2026, 9, 7, 14, 10))).toBe('40 мин');
+    expect(formatUntil(at, new Date(2026, 9, 7, 15, 30))).toBe('2 ч');
   });
 
   it('pluralize', () => {

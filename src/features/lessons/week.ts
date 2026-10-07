@@ -5,9 +5,12 @@ import { addDays, formatTime, lessonEnd, movedFrom, sameDay, startOfDay } from '
 
 /**
  * Вид плашки в расписании.
- * movedFrom — след перенесённого занятия в его старом дне; clash — пересекается с другим занятием дня.
+ * movedFrom — след перенесённого занятия в его старом дне; clash — пересекается с другим занятием дня;
+ * homework — домашка прикреплена; noHomework — домашки нет, а до занятия меньше суток; normal — домашку давать ещё рано.
  */
-export type WeekItemKind = 'normal' | 'past' | 'movedFrom' | 'cancelled' | 'clash';
+export type WeekItemKind = 'normal' | 'homework' | 'noHomework' | 'past' | 'movedFrom' | 'cancelled' | 'clash';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface WeekItem {
   key: string;
@@ -44,6 +47,16 @@ export const clashIds = (lessons: Lesson[]) => {
   return ids;
 };
 
+/** Вид занятия (без следа переноса): отмена → пересечение → прошло → домашка / нет домашки за сутки / ещё рано. */
+export const lessonKind = (l: Lesson, now: Date, clashes: Set<string>): Exclude<WeekItemKind, 'movedFrom'> => {
+  const start = new Date(l.startsAt);
+  if (l.status === 'cancelled') return 'cancelled';
+  if (clashes.has(l.id)) return 'clash';
+  if (lessonEnd(l) < now) return 'past';
+  if (l.assignments.length) return 'homework';
+  return start.getTime() - now.getTime() < DAY_MS ? 'noHomework' : 'normal';
+};
+
 /** Неделя с понедельника `from`: занятия по дням, перенесённое — в обоих днях, пересечения помечены. */
 export const buildWeek = (lessons: Lesson[], from: Date, now: Date): WeekDay[] => {
   const clashes = clashIds(lessons);
@@ -70,13 +83,12 @@ export const buildWeek = (lessons: Lesson[], from: Date, now: Date): WeekDay[] =
       }
       if (!sameDay(start, date)) continue;
 
-      const cancelled = l.status === 'cancelled';
       items.push({
         key: l.id,
         lesson: l,
         start,
         end,
-        kind: cancelled ? 'cancelled' : clashes.has(l.id) ? 'clash' : end < now ? 'past' : 'normal',
+        kind: lessonKind(l, now, clashes),
         range: range(start, end),
         caption: caption(l),
       });

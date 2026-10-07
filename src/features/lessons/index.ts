@@ -155,10 +155,10 @@ export const everyWeekday = (d: Date) => everyIsoWeekday(((d.getDay() + 6) % 7) 
 
 export const formatTime = (d: Date) => d.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
 
-/** «через 40 мин», «через 2 ч». */
-export const formatIn = (from: Date, to: Date) => {
+/** Сколько осталось: «40 мин», «2 ч». */
+export const formatUntil = (from: Date, to: Date) => {
   const min = Math.max(1, Math.round((to.getTime() - from.getTime()) / 60_000));
-  return min < 60 ? `через ${min} мин` : `через ${Math.round(min / 60)} ч`;
+  return min < 60 ? `${min} мин` : `${Math.round(min / 60)} ч`;
 };
 
 const plural = new Intl.PluralRules('ru');

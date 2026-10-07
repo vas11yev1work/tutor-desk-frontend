@@ -116,6 +116,7 @@
             <b :class="isStruck(item) && 'line-through'" class="font-semibold">{{ item.lesson.student.name }}</b>
             <span class="text-xs opacity-85">{{ item.caption }}</span>
             <span v-if="!item.lesson.seriesId" class="text-xs opacity-85">Разовое</span>
+            <span v-if="item.kind === 'noHomework'" class="text-xs text-danger">нет домашки</span>
           </RouterLink>
           <div
             v-if="!day.items.length"
@@ -127,6 +128,13 @@
       </div>
     </div>
     <div class="hidden flex-wrap gap-5 text-[13px] text-label md:flex">
+      <span class="flex items-center gap-1.5"><i class="size-3.5 rounded bg-ink" />домашка прикреплена</span>
+      <span class="flex items-center gap-1.5">
+        <i class="size-3.5 rounded border-[1.5px] border-dashed border-alert" />нет домашки к ближайшему
+      </span>
+      <span class="flex items-center gap-1.5"
+        ><i class="size-3.5 rounded border border-line bg-white" />домашку ещё рано</span
+      >
       <span class="flex items-center gap-1.5"><i class="size-3.5 rounded bg-warn-soft" />перенесено</span>
       <span class="flex items-center gap-1.5"><i class="size-3.5 rounded bg-danger-soft" />отменено</span>
       <span class="flex items-center gap-1.5"><i class="size-3.5 rounded bg-alert" />пересечение</span>
@@ -186,30 +194,13 @@
 import { ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import { KIND } from '@/components/lessonKinds';
 import NewLessonDialog from '@/components/NewLessonDialog.vue';
-import type { Tone } from '@/components/ui/tones';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import { addDays, formatTime, pluralize, startOfWeek, useLessons } from '@/features/lessons';
-import { buildWeek, findClashes, formatWeekRange, type WeekItem, type WeekItemKind } from '@/features/lessons/week';
+import { buildWeek, findClashes, formatWeekRange, type WeekItem } from '@/features/lessons/week';
 import { useStudents } from '@/features/students';
-
-// Обводки — ring/outline внутрь: не меняют размер, плашки не прыгают при смене недели.
-const KIND: Record<WeekItemKind, { block: string; time: string; chip?: { label: string; tone: Tone } }> = {
-  normal: { block: 'bg-white text-ink ring-1 ring-line ring-inset', time: 'text-label' },
-  past: { block: 'bg-chip text-label opacity-70', time: 'text-label' },
-  movedFrom: {
-    block: 'bg-warn-soft text-warn outline-[length:1.5px] outline-offset-[-1.5px] outline-[#d9a93a] outline-dashed',
-    time: 'text-warn',
-    chip: { label: 'Перенос', tone: 'warn' },
-  },
-  cancelled: {
-    block: 'bg-danger-soft text-[#8a2309]',
-    time: 'text-[#8a2309]',
-    chip: { label: 'Отменено', tone: 'danger' },
-  },
-  clash: { block: 'bg-alert text-ink', time: 'text-ink', chip: { label: 'Пересечение', tone: 'alert' } },
-};
 
 const IN_WEEKDAY = ['в понедельник', 'во вторник', 'в среду', 'в четверг', 'в пятницу', 'в субботу', 'в воскресенье'];
 

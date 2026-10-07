@@ -78,28 +78,30 @@
             class="flex flex-col gap-1.5"
           >
             <div class="flex items-baseline gap-1.5 px-1 pt-1 pb-1.5">
-              <b class="text-[13px] capitalize">{{ day.weekday }}</b>
+              <b class="text-[13px] capitalize">{{ fmt(day.date, { weekday: 'short' }) }}</b>
               <span class="font-mono text-[13px] text-muted">{{ day.date.getDate() }}</span>
               <UiChip v-if="day.isToday" tone="accent" size="sm" class="ml-auto">сегодня</UiChip>
             </div>
             <RouterLink
               v-for="item in day.items"
               :key="item.key"
-              :to="`/lessons/${item.id}`"
-              :class="day.isToday ? 'bg-ink text-white' : 'bg-[#f4f5f7]'"
+              :to="`/lessons/${item.lesson.id}`"
+              :class="KIND[item.kind].block"
               class="flex flex-col gap-0.5 rounded-[10px] px-2.5 py-2 text-[13px] hover:brightness-95"
             >
               <span
-                :class="[item.struck ? 'text-subtle line-through' : day.isToday ? 'text-white/75' : 'text-label']"
+                :class="[KIND[item.kind].time, isStruck(item) && 'line-through']"
                 class="flex items-center gap-1.5 font-mono text-xs font-semibold"
               >
-                {{ item.time }}
-                <i v-if="item.clash" class="size-1.5 rounded-full bg-alert" aria-hidden="true" />
+                {{ formatTime(item.start) }}
+                <i
+                  v-if="item.kind === 'noHomework' || item.kind === 'clash'"
+                  class="size-1.5 rounded-full bg-alert"
+                  aria-hidden="true"
+                />
               </span>
-              <span :class="item.struck && 'text-subtle line-through'">{{ item.name }}</span>
-              <span v-if="item.caption" :class="day.isToday ? 'text-white/70' : 'text-[#6b6f86]'" class="text-[11.5px]">
-                {{ item.caption }}
-              </span>
+              <span :class="isStruck(item) && 'line-through'">{{ shortName(item.lesson.student.name) }}</span>
+              <span v-if="NOTE[item.kind]" class="text-[11.5px] opacity-80">{{ NOTE[item.kind] }}</span>
             </RouterLink>
             <div v-if="!day.items.length" class="px-2.5 py-2 text-[13px] text-subtle">Выходной</div>
           </div>
@@ -116,7 +118,7 @@ import { LogOut, Plus, Search } from '@lucide/vue';
 import { computed, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import type { Lesson } from '@/api/types';
+import { KIND } from '@/components/lessonKinds';
 import LessonList from '@/components/LessonList.vue';
 import NewLessonDialog from '@/components/NewLessonDialog.vue';
 import UiButton from '@/components/ui/UiButton.vue';
@@ -124,17 +126,16 @@ import UiChip from '@/components/ui/UiChip.vue';
 import { useLogout } from '@/features/auth';
 import {
   addDays,
-  formatIn,
   formatTime,
+  formatUntil,
   lessonEnd,
-  movedFrom,
   pluralize,
   sameDay,
   startOfDay,
   startOfWeek,
   useLessons,
 } from '@/features/lessons';
-import { clashIds, formatWeekRange } from '@/features/lessons/week';
+import { buildWeek, clashIds, formatWeekRange, type WeekItem, type WeekItemKind } from '@/features/lessons/week';
 
 // Раз в минуту: «через 2 ч», подсветка ближайшего и смена дня в полночь.
 const adding = ref(false);
@@ -168,7 +169,7 @@ const summary = computed(() => {
   const range = `С ${todayRange.value.replace(' – ', ' до ')}.`;
   if (!next.value) return `${range} На сегодня всё.`;
   const start = new Date(next.value.startsAt);
-  return `${range} ${start <= now.value ? 'Сейчас идёт занятие.' : `Ближайшее — ${formatIn(now.value, start)}.`}`;
+  return `${range} ${start <= now.value ? 'Сейчас идёт занятие.' : `Ближайшее — через ${formatUntil(now.value, start)}.`}`;
 });
 
 const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) => d.toLocaleDateString('ru', opts);
@@ -188,53 +189,17 @@ const shortName = (name: string) => {
 
 const clashes = computed(() => clashIds(data.value ?? []));
 
-const week = computed(() => {
-  const from = startOfWeek(now.value);
-  const lessons = data.value ?? [];
-  return Array.from({ length: 7 }, (_, i) => {
-    const date = addDays(from, i);
-    const items = lessons.flatMap((l: Lesson) => {
-      const name = shortName(l.student.name);
-      const original = movedFrom(l);
-      const out = [];
-      if (original && sameDay(original, date)) {
-        const to = new Date(l.startsAt);
-        out.push({
-          key: `${l.id}-from`,
-          id: l.id,
-          at: original,
-          time: formatTime(original),
-          name,
-          struck: true,
-          clash: false,
-          caption: `перенос на ${fmt(to, { weekday: 'short' })}`,
-        });
-      }
-      if (sameDay(new Date(l.startsAt), date)) {
-        const cancelled = l.status === 'cancelled';
-        const clash = clashes.value.has(l.id);
-        out.push({
-          key: l.id,
-          id: l.id,
-          at: new Date(l.startsAt),
-          time: formatTime(new Date(l.startsAt)),
-          name,
-          struck: cancelled,
-          clash,
-          caption: cancelled ? 'отмена' : clash ? 'пересечение' : '',
-        });
-      }
-      return out;
-    });
-    return {
-      date,
-      weekday: fmt(date, { weekday: 'short' }),
-      isToday: sameDay(date, now.value),
-      isPast: date < startOfDay(now.value),
-      items: items.sort((a, b) => a.at.getTime() - b.at.getTime()),
-    };
-  });
-});
+// Та же неделя и те же виды плашек, что в расписании.
+const week = computed(() => buildWeek(data.value ?? [], startOfWeek(now.value), now.value));
+
+/** Короткая подпись под именем: статус важнее экзамена. */
+const NOTE: Partial<Record<WeekItemKind, string>> = {
+  movedFrom: 'перенос',
+  cancelled: 'отмена',
+  clash: 'пересечение',
+  noHomework: 'нет домашки',
+};
+const isStruck = (item: WeekItem) => item.kind === 'cancelled' || item.kind === 'movedFrom';
 
 const weekLabel = computed(() => formatWeekRange(startOfWeek(now.value)));
 

@@ -31,13 +31,10 @@
         v-if="l.id === highlight"
         class="font-mono text-[11px] font-semibold tracking-[0.06em] whitespace-nowrap uppercase"
       >
-        {{ new Date(l.startsAt) <= now ? 'идёт' : formatIn(now, new Date(l.startsAt)) }}
+        {{ !l.assignments.length ? 'нет домашки · ' : ''
+        }}{{ new Date(l.startsAt) <= now ? 'идёт' : formatUntil(now, new Date(l.startsAt)) }}
       </span>
-      <UiChip v-else-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
-      <UiChip v-else-if="clashes?.has(l.id)" tone="alert">Пересечение</UiChip>
-      <UiChip v-else-if="movedFrom(l)" tone="warn">
-        Перенесено с {{ movedFrom(l)!.toLocaleDateString('ru', { weekday: 'short' }) }}
-      </UiChip>
+      <UiChip v-else-if="chipOf(l)" :tone="chipOf(l)!.tone">{{ chipOf(l)!.label }}</UiChip>
     </RouterLink>
     <p v-if="!lessons.length" :class="tiles ? 'px-2.5 py-4' : 'px-4.5 py-6'" class="text-center text-[15px] text-muted">
       {{ empty }}
@@ -47,11 +44,13 @@
 
 <script setup lang="ts">
 import type { Lesson } from '@/api/types';
+import { KIND } from '@/components/lessonKinds';
 import UiChip from '@/components/ui/UiChip.vue';
-import { formatIn, formatTime, lessonEnd, movedFrom } from '@/features/lessons';
+import { formatTime, formatUntil, lessonEnd, movedFrom } from '@/features/lessons';
+import { lessonKind } from '@/features/lessons/week';
 import { studentCaption } from '@/features/students';
 
-defineProps<{
+const props = defineProps<{
   lessons: Lesson[];
   now: Date;
   /** Ближайшее занятие — лаймовая плашка с «через 2 ч». */
@@ -64,4 +63,14 @@ defineProps<{
   withDuration?: boolean;
   empty: string;
 }>();
+
+// Отмена и пересечение — как в расписании, затем «Нет домашки», перенос и «Домашка ✓».
+const chipOf = (l: Lesson) => {
+  const kind = lessonKind(l, props.now, props.clashes ?? new Set());
+  if (kind === 'cancelled' || kind === 'clash' || kind === 'noHomework') return KIND[kind].chip;
+  const from = movedFrom(l);
+  if (from)
+    return { label: `Перенесено с ${from.toLocaleDateString('ru', { weekday: 'short' })}`, tone: 'warn' as const };
+  return kind === 'homework' ? KIND.homework.chip : undefined;
+};
 </script>
