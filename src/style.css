@@ -14,7 +14,9 @@
   --color-line-soft: #edeef2;
   --color-field: #f7f8fa;
   --color-accent: #d4f54c;
-  --color-danger: #c4314b;
+  --color-danger: #b4320f;
+  --color-danger-soft: #ffe6de;
+  --color-alert: #ff9b80;
 }
 
 /* Тёмный «тетрадный лист» в клетку */

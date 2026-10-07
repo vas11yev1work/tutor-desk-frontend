@@ -6,7 +6,7 @@
       v-model="model"
       v-bind="$attrs"
       :aria-invalid="invalid || undefined"
-      class="h-13 rounded-[14px] border border-line bg-field px-4 text-base font-medium text-ink transition-colors focus:bg-white focus:outline-2 focus:outline-offset-1 focus:outline-ink aria-invalid:border-danger"
+      class="h-13 rounded-[14px] border border-line bg-field px-4 text-base font-medium text-ink transition-colors focus:bg-white focus:outline-2 focus:outline-offset-1 focus:outline-ink aria-invalid:border-alert"
     />
   </div>
 </template>
