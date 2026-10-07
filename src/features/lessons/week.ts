@@ -48,13 +48,21 @@ export const clashIds = (lessons: Lesson[]) => {
 };
 
 /** Вид занятия (без следа переноса): отмена → пересечение → прошло → домашка / нет домашки за сутки / ещё рано. */
+/**
+ * Статус домашки: есть файл (пробник — тоже домашка); нет, а до занятия меньше суток; иначе — ещё рано (null).
+ * У прошедших и отменённых статуса нет.
+ */
+export const homeworkStatus = (l: Lesson, now: Date): 'homework' | 'noHomework' | null => {
+  if (l.status === 'cancelled' || lessonEnd(l) < now) return null;
+  if (l.assignments.length) return 'homework';
+  return new Date(l.startsAt).getTime() - now.getTime() < DAY_MS ? 'noHomework' : null;
+};
+
 export const lessonKind = (l: Lesson, now: Date, clashes: Set<string>): Exclude<WeekItemKind, 'movedFrom'> => {
-  const start = new Date(l.startsAt);
   if (l.status === 'cancelled') return 'cancelled';
   if (clashes.has(l.id)) return 'clash';
   if (lessonEnd(l) < now) return 'past';
-  if (l.assignments.length) return 'homework';
-  return start.getTime() - now.getTime() < DAY_MS ? 'noHomework' : 'normal';
+  return homeworkStatus(l, now) ?? 'normal';
 };
 
 /** Неделя с понедельника `from`: занятия по дням, перенесённое — в обоих днях, пересечения помечены. */

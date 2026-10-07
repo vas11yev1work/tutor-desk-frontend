@@ -1,5 +1,7 @@
+import type { Lesson } from '@/api/types';
 import type { Tone } from '@/components/ui/tones';
-import type { WeekItemKind } from '@/features/lessons/week';
+import { movedFrom } from '@/features/lessons';
+import { homeworkStatus, type WeekItemKind } from '@/features/lessons/week';
 
 /** Плашка занятия по виду: фон и обводка, цвет времени, чип для списков. Общие для расписания и Main. */
 // Обводки — ring/outline внутрь: не меняют размер, плашки не прыгают при смене недели.
@@ -23,4 +25,22 @@ export const KIND: Record<WeekItemKind, { block: string; time: string; chip?: { 
     chip: { label: 'Отменено', tone: 'danger' },
   },
   clash: { block: 'bg-alert text-ink', time: 'text-ink', chip: { label: 'Пересечение', tone: 'alert' } },
+};
+
+export type Chip = { label: string; tone: Tone };
+
+/**
+ * Все чипы занятия, ничего не прячем: пересечение, перенос и домашка — независимые статусы.
+ * У отменённого — только «Отменено».
+ */
+export const lessonChips = (l: Lesson, now: Date, clashes: Set<string>): Chip[] => {
+  if (l.status === 'cancelled') return [KIND.cancelled.chip!];
+  const chips: Chip[] = [];
+  if (clashes.has(l.id)) chips.push(KIND.clash.chip!);
+  const from = movedFrom(l);
+  if (from) chips.push({ label: `Перенесено с ${from.toLocaleDateString('ru', { weekday: 'short' })}`, tone: 'warn' });
+  else if (l.isModified) chips.push(KIND.movedFrom.chip!);
+  const hw = homeworkStatus(l, now);
+  if (hw) chips.push(KIND[hw].chip!);
+  return chips;
 };

@@ -178,9 +178,9 @@
               <div class="text-[12.5px] text-muted">{{ item.caption }}</div>
               <div v-if="!item.lesson.seriesId" class="text-[12.5px] text-muted">Разовое</div>
             </div>
-            <UiChip v-if="KIND[item.kind].chip" :tone="KIND[item.kind].chip!.tone">
-              {{ KIND[item.kind].chip!.label }}
-            </UiChip>
+            <div class="flex flex-none flex-wrap justify-end gap-1.5">
+              <UiChip v-for="c in itemChips(item)" :key="c.label" :tone="c.tone">{{ c.label }}</UiChip>
+            </div>
           </RouterLink>
         </div>
       </section>
@@ -194,12 +194,12 @@
 import { ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import { KIND } from '@/components/lessonKinds';
+import { KIND, lessonChips } from '@/components/lessonKinds';
 import NewLessonDialog from '@/components/NewLessonDialog.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import { addDays, formatTime, pluralize, startOfWeek, useLessons } from '@/features/lessons';
-import { buildWeek, findClashes, formatWeekRange, type WeekItem } from '@/features/lessons/week';
+import { buildWeek, clashIds, findClashes, formatWeekRange, type WeekItem } from '@/features/lessons/week';
 import { useStudents } from '@/features/students';
 
 const IN_WEEKDAY = ['в понедельник', 'во вторник', 'в среду', 'в четверг', 'в пятницу', 'в субботу', 'в воскресенье'];
@@ -212,11 +212,14 @@ const { data: lessons, error } = useLessons(() => ({ from: weekStart.value, to: 
 const { data: students } = useStudents();
 const studentId = ref('');
 
-const week = computed(() => {
-  const list = (lessons.value ?? []).filter(l => !studentId.value || l.student.id === studentId.value);
-  return buildWeek(list, weekStart.value, new Date());
-});
+// Пересечения — по тому же списку, что и сетка (с учётом фильтра ученика).
+const visible = computed(() => (lessons.value ?? []).filter(l => !studentId.value || l.student.id === studentId.value));
+const week = computed(() => buildWeek(visible.value, weekStart.value, new Date()));
 const clashes = computed(() => findClashes(week.value));
+const visibleClashIds = computed(() => clashIds(visible.value));
+// След переноса в старом дне — только «Перенос»; у занятия — все его статусы.
+const itemChips = (item: WeekItem) =>
+  item.kind === 'movedFrom' ? [KIND.movedFrom.chip!] : lessonChips(item.lesson, new Date(), visibleClashIds.value);
 
 const summary = computed(() => {
   const live = week.value.reduce((n, d) => n + d.liveCount, 0);

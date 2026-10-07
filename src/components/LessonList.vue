@@ -31,10 +31,11 @@
         v-if="l.id === highlight"
         class="font-mono text-[11px] font-semibold tracking-[0.06em] whitespace-nowrap uppercase"
       >
-        {{ !l.assignments.length ? 'нет домашки · ' : ''
-        }}{{ new Date(l.startsAt) <= now ? 'идёт' : formatUntil(now, new Date(l.startsAt)) }}
+        {{ highlightLabel(l) }}
       </span>
-      <UiChip v-else-if="chipOf(l)" :tone="chipOf(l)!.tone">{{ chipOf(l)!.label }}</UiChip>
+      <div v-else-if="chipsOf(l).length" class="flex flex-none flex-wrap justify-end gap-1.5">
+        <UiChip v-for="c in chipsOf(l)" :key="c.label" :tone="c.tone">{{ c.label }}</UiChip>
+      </div>
     </RouterLink>
     <p v-if="!lessons.length" :class="tiles ? 'px-2.5 py-4' : 'px-4.5 py-6'" class="text-center text-[15px] text-muted">
       {{ empty }}
@@ -44,10 +45,9 @@
 
 <script setup lang="ts">
 import type { Lesson } from '@/api/types';
-import { KIND } from '@/components/lessonKinds';
+import { lessonChips } from '@/components/lessonKinds';
 import UiChip from '@/components/ui/UiChip.vue';
-import { formatTime, formatUntil, lessonEnd, movedFrom } from '@/features/lessons';
-import { lessonKind } from '@/features/lessons/week';
+import { formatTime, formatUntil, lessonEnd } from '@/features/lessons';
 import { studentCaption } from '@/features/students';
 
 const props = defineProps<{
@@ -64,13 +64,18 @@ const props = defineProps<{
   empty: string;
 }>();
 
-// Отмена и пересечение — как в расписании, затем «Нет домашки», перенос и «Домашка ✓».
-const chipOf = (l: Lesson) => {
-  const kind = lessonKind(l, props.now, props.clashes ?? new Set());
-  if (kind === 'cancelled' || kind === 'clash' || kind === 'noHomework') return KIND[kind].chip;
-  const from = movedFrom(l);
-  if (from)
-    return { label: `Перенесено с ${from.toLocaleDateString('ru', { weekday: 'short' })}`, tone: 'warn' as const };
-  return kind === 'homework' ? KIND.homework.chip : undefined;
+const chipsOf = (l: Lesson) => lessonChips(l, props.now, props.clashes ?? new Set());
+
+/** Лаймовая строка ближайшего: статусы текстом рядом со временем — «пересечение · перенос · нет домашки · 16 ч». */
+const highlightLabel = (l: Lesson) => {
+  const start = new Date(l.startsAt);
+  return [
+    props.clashes?.has(l.id) && 'пересечение',
+    l.isModified && 'перенос',
+    !l.assignments.length && 'нет домашки',
+    start <= props.now ? 'идёт' : formatUntil(props.now, start),
+  ]
+    .filter(Boolean)
+    .join(' · ');
 };
 </script>

@@ -152,14 +152,20 @@
                 <div :class="l.status === 'cancelled' && 'text-muted line-through'" class="text-[15px] font-semibold">
                   {{ dayTitle(new Date(l.startsAt)) }}
                 </div>
-                <div v-if="l.status !== 'cancelled'" class="truncate text-[13px] text-muted">
-                  {{ movedNote(l) || homeworkNote(l) }}
-                </div>
+                <template v-if="l.status !== 'cancelled'">
+                  <div class="truncate text-[13px] text-muted">{{ homeworkNote(l) }}</div>
+                  <div v-if="movedNote(l)" class="truncate text-[13px] text-muted">{{ movedNote(l) }}</div>
+                </template>
               </div>
-              <UiChip v-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
-              <UiChip v-else-if="l.isModified" tone="warn">Перенос</UiChip>
-              <UiChip v-else-if="l.assignments.length">Домашка ✓</UiChip>
-              <UiChip v-else tone="danger">Нет домашки</UiChip>
+              <!-- Все статусы сразу: перенос и домашка независимы; у отменённого — только «Отменено» -->
+              <div class="flex flex-none flex-wrap justify-end gap-1.5">
+                <UiChip v-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
+                <template v-else>
+                  <UiChip v-if="l.isModified" tone="warn">Перенос</UiChip>
+                  <UiChip v-if="l.assignments.length">Домашка ✓</UiChip>
+                  <UiChip v-else tone="danger">Нет домашки</UiChip>
+                </template>
+              </div>
             </RouterLink>
             <p v-if="lessons && !upcoming.length" class="px-4.5 py-6 text-center text-[15px] text-muted">
               Ближайших занятий нет
