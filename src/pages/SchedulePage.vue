@@ -38,6 +38,10 @@
             aria-hidden="true"
           />
         </label>
+        <UiButton aria-label="Новое занятие" class="max-md:w-11 max-md:px-0" @click="adding = true">
+          <Plus :size="20" :stroke-width="2" aria-hidden="true" />
+          <span class="max-md:hidden">Занятие</span>
+        </UiButton>
       </div>
     </header>
 
@@ -171,13 +175,16 @@
         </div>
       </section>
     </div>
+
+    <NewLessonDialog v-model:open="adding" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ChevronDown, ChevronLeft, ChevronRight, CircleAlert } from '@lucide/vue';
+import { ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import NewLessonDialog from '@/components/NewLessonDialog.vue';
 import type { Tone } from '@/components/ui/tones';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
@@ -204,6 +211,7 @@ const KIND: Record<WeekItemKind, { block: string; time: string; chip?: { label: 
 
 const IN_WEEKDAY = ['в понедельник', 'во вторник', 'в среду', 'в четверг', 'в пятницу', 'в субботу', 'в воскресенье'];
 
+const adding = ref(false);
 const weekStart = ref(startOfWeek(new Date()));
 const shift = (weeks: number) => (weekStart.value = addDays(weekStart.value, weeks * 7));
 

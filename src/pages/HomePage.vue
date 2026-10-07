@@ -24,6 +24,7 @@
 
       <div class="hidden flex-wrap gap-2.5 md:flex">
         <UiButton variant="ghost" to="/students"><Search :size="18" aria-hidden="true" />Найти ученика</UiButton>
+        <UiButton @click="adding = true"><Plus :size="18" :stroke-width="2" aria-hidden="true" />Занятие</UiButton>
       </div>
 
       <button
@@ -96,16 +97,19 @@
         </div>
       </div>
     </section>
+
+    <NewLessonDialog v-model:open="adding" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { LogOut, Search } from '@lucide/vue';
+import { LogOut, Plus, Search } from '@lucide/vue';
 import { computed, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import type { Lesson } from '@/api/types';
 import LessonList from '@/components/LessonList.vue';
+import NewLessonDialog from '@/components/NewLessonDialog.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import { useLogout } from '@/features/auth';
@@ -124,6 +128,7 @@ import {
 import { formatWeekRange } from '@/features/lessons/week';
 
 // Раз в минуту: «через 2 ч», подсветка ближайшего и смена дня в полночь.
+const adding = ref(false);
 const now = ref(new Date());
 const timer = setInterval(() => (now.value = new Date()), 60_000);
 onUnmounted(() => clearInterval(timer));

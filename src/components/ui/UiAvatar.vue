@@ -1,14 +1,5 @@
 <template>
-  <span
-    :class="[
-      TONE[tone],
-      size === 'lg'
-        ? 'size-17 -rotate-4 rounded-[22px] font-display text-[22px] font-semibold tracking-[-0.02em]'
-        : 'size-10.5 rounded-full text-[13px] font-bold',
-    ]"
-    class="flex flex-none items-center justify-center"
-    aria-hidden="true"
-  >
+  <span :class="[TONE[tone], SIZE[size]]" class="flex flex-none items-center justify-center" aria-hidden="true">
     {{ initials }}
   </span>
 </template>
@@ -25,9 +16,15 @@ const {
 } = defineProps<{
   name: string;
   tone?: Tone;
-  /** lg — крупная наклонённая плашка в карточке ученика. */
-  size?: 'md' | 'lg';
+  /** sm — в поле выбора ученика, lg — крупная наклонённая плашка в карточке ученика. */
+  size?: keyof typeof SIZE;
 }>();
+
+const SIZE = {
+  sm: 'size-7.5 rounded-full text-xs font-bold',
+  md: 'size-10.5 rounded-full text-[13px] font-bold',
+  lg: 'size-17 -rotate-4 rounded-[22px] font-display text-[22px] font-semibold tracking-[-0.02em]',
+};
 
 /** «Маша Соколова» → «МС». */
 const initials = computed(() =>

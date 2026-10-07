@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Lesson } from '@/api/types';
 
-import { formatIn, movedFrom, pluralize, startOfWeek } from '.';
+import { findOverlap, formatIn, fromIsoDateTime, isoWeekday, movedFrom, pluralize, startOfWeek, toIsoDate } from '.';
 
 const lesson = (p: Partial<Lesson>): Lesson => ({
   id: '1',
@@ -39,5 +39,30 @@ describe('lessons helpers', () => {
     const sameDay = new Date(2026, 9, 7, 12).toISOString();
     expect(movedFrom(lesson({ isModified: true, originalStartsAt: sameDay }))).toBeNull();
     expect(movedFrom(lesson({ originalStartsAt: monday }))).toBeNull();
+  });
+});
+
+describe('даты для форм', () => {
+  it('toIsoDate и fromIsoDateTime — в поясе браузера, туда и обратно', () => {
+    expect(toIsoDate(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05');
+    expect(fromIsoDateTime('2026-10-10', '12:30')).toEqual(new Date(2026, 9, 10, 12, 30));
+  });
+
+  it('isoWeekday: понедельник 1, воскресенье 7', () => {
+    expect(isoWeekday(new Date(2026, 9, 5))).toBe(1);
+    expect(isoWeekday(new Date(2026, 9, 11))).toBe(7);
+  });
+});
+
+describe('findOverlap', () => {
+  const at = (h: number, m = 0) => new Date(2026, 9, 10, h, m);
+  const l = (id: string, h: number, m = 0, status: Lesson['status'] = 'scheduled') =>
+    lesson({ id, startsAt: at(h, m).toISOString(), status });
+
+  it('находит пересечение, стык и отменённое — не пересечение', () => {
+    const slot = [{ start: at(12), end: at(13) }];
+    expect(findOverlap([l('a', 11), l('b', 13)], slot)).toBeUndefined();
+    expect(findOverlap([l('c', 12, 30, 'cancelled')], slot)).toBeUndefined();
+    expect(findOverlap([l('a', 11), l('d', 12, 30)], slot)?.id).toBe('d');
   });
 });

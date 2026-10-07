@@ -107,7 +107,16 @@
         </section>
 
         <section class="flex flex-col gap-2.5">
-          <h2 class="px-1 section-title">Ближайшие занятия</h2>
+          <div class="flex items-center justify-between px-1">
+            <h2 class="section-title">Ближайшие занятия</h2>
+            <button
+              type="button"
+              class="flex min-h-8 cursor-pointer items-center text-sm font-semibold text-link hover:text-link-hover"
+              @click="addingLesson = true"
+            >
+              + Добавить
+            </button>
+          </div>
           <div class="flex flex-col overflow-hidden card">
             <div
               v-for="(l, i) in upcoming"
@@ -141,6 +150,7 @@
     </div>
 
     <StudentFormDialog v-if="student" v-model:open="editing" :student="student" />
+    <NewLessonDialog v-model:open="addingLesson" :default-student-id="id" />
   </div>
 </template>
 
@@ -152,6 +162,7 @@ import { toast } from 'vue-sonner';
 
 import { ApiError } from '@/api/client';
 import type { Lesson } from '@/api/types';
+import NewLessonDialog from '@/components/NewLessonDialog.vue';
 import StudentFormDialog from '@/components/StudentFormDialog.vue';
 import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
@@ -180,6 +191,7 @@ const { data: student, error } = useStudent(id);
 const isNotFound = computed(() => error.value instanceof ApiError && error.value.status === 404);
 const tg = computed(() => telegram(student.value?.contact ?? null));
 const editing = ref(false);
+const addingLesson = ref(false);
 
 // Ссылка
 const linkLabel = computed(() => student.value && portalUrl(student.value.accessToken).replace(/^https?:\/\//, ''));
