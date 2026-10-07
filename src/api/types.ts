@@ -36,7 +36,15 @@ export interface Assignment {
   /** Байты. */
   size: number;
   createdAt: string;
+  /** Только у пробника: первичные баллы по номерам заданий; null — ещё не проверен. */
+  scores: number[] | null;
+  /** Сумма scores — первичный балл. */
+  total: number | null;
+  comment: string | null;
 }
+
+/** GET /api/admin/exams — максимальный первичный балл за каждое задание, по порядку номеров. */
+export type ExamMaxScores = Record<Exam, number[]>;
 
 /** GET /api/admin/lessons?from=&to= — перенесённое приходит и в старом, и в новом диапазоне. */
 export interface Lesson {

@@ -96,6 +96,20 @@
 
       <!-- Занятия -->
       <div class="flex min-w-0 flex-col gap-5.5 min-[1200px]:flex-[2_1_520px]">
+        <!-- Последний оценённый пробник -->
+        <div
+          v-if="lastScored"
+          class="flex flex-col gap-2 rounded-[20px] bg-accent px-4 py-3.5 text-ink md:rounded-3xl md:px-6 md:py-5"
+        >
+          <div class="font-display text-[40px] leading-none font-bold tracking-[-0.02em] md:text-[56px]">
+            {{ lastScored.total }}<span v-if="examMax" class="text-[0.45em] opacity-55"> / {{ examMax }}</span>
+          </div>
+          <div class="font-mono text-[13px] font-semibold">
+            Пробник {{ lastScored.number
+            }}<template v-if="delta !== null"> · {{ delta > 0 ? `+${delta}` : delta }} к прошлому</template>
+          </div>
+        </div>
+
         <section v-if="series?.length" class="flex flex-col gap-2.5">
           <h2 class="px-1 section-title">Регулярные занятия</h2>
           <div v-for="s in series" :key="s.id" class="flex items-center gap-3 card px-4 py-3.5">
@@ -153,28 +167,42 @@
           </div>
         </section>
 
-        <!-- Пробники: баллов на бэке пока нет. Когда появятся — справа балл у оценённых и «Внести» у остальных. -->
+        <!-- Пробники: строка ведёт на оценку; неоценённые выделены, как в макете -->
         <section v-if="mocks?.length || student.exam" class="flex flex-col gap-2.5">
           <h2 class="px-1 section-title">Пробники</h2>
           <div class="flex flex-col overflow-hidden card">
             <RouterLink
               v-for="(m, i) in [...(mocks ?? [])].reverse()"
               :key="m.id"
-              :to="`/lessons/${m.lessonId}`"
-              :class="i > 0 && 'border-t border-line-soft'"
-              class="flex items-center gap-3.5 bg-[#fff5f2] px-3.5 py-3 hover:brightness-98 md:px-4.5"
+              :to="`/students/${id}/mocks/${m.id}`"
+              :class="[i > 0 && 'border-t border-line-soft', m.total === null ? 'bg-[#fff5f2]' : 'hover:bg-hover']"
+              class="flex items-center gap-3.5 px-3.5 py-3 hover:brightness-98 md:px-4.5"
             >
               <div
-                class="flex size-11 flex-none items-center justify-center rounded-[14px] bg-danger-soft font-display text-base text-danger"
+                :class="m.total === null ? 'bg-danger-soft text-danger' : 'bg-chip text-ink'"
+                class="flex size-11 flex-none items-center justify-center rounded-[14px] font-display text-base"
               >
                 {{ m.number }}
               </div>
               <div class="min-w-0 flex-1">
-                <div class="text-[15px] font-semibold">Пробник {{ m.number }}</div>
-                <div class="truncate text-[13px] text-muted">
-                  {{ shortDate(m.lessonStartsAt) }} · {{ m.fileName }}
+                <div class="text-[15px] font-semibold">
+                  Пробник {{ m.number }}<template v-if="student.exam"> · {{ EXAM_LABEL[student.exam] }}</template>
                 </div>
+                <div class="truncate text-[13px] text-muted">{{ shortDate(m.lessonStartsAt) }} · {{ m.fileName }}</div>
               </div>
+              <!-- Оценённый — первичный балл, нет — «Оценить» (вся строка — ссылка на оценку) -->
+              <span v-if="m.total !== null" class="font-display text-[22px] font-semibold tracking-[-0.02em]">
+                {{ m.total
+                }}<span v-if="examMax" class="text-[13px] font-medium tracking-normal text-muted">
+                  / {{ examMax }}</span
+                >
+              </span>
+              <span
+                v-else
+                class="inline-flex min-h-9.5 items-center rounded-xl bg-ink px-3 text-[13.5px] font-semibold text-white"
+              >
+                Оценить
+              </span>
             </RouterLink>
             <p v-if="mocks && !mocks.length" class="px-4.5 py-6 text-center text-[15px] text-muted">
               Пробников пока нет — их выдают на странице занятия
@@ -230,7 +258,7 @@ import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue';
-import { useStudentMocks } from '@/features/assignments';
+import { useExamMaxScores, useStudentMocks } from '@/features/assignments';
 import { addDays, formatTime, lessonEnd, sameDay, startOfDay } from '@/features/lessons';
 import {
   EXAM_LABEL,
@@ -302,6 +330,18 @@ const upcoming = computed(() => (lessons.value ?? []).filter(l => lessonEnd(l) >
 const { data: series } = useStudentSeries(id);
 
 const { data: mocks } = useStudentMocks(id);
+const { data: exams } = useExamMaxScores();
+/** Максимальный первичный балл экзамена ученика — «16 / 32». */
+const examMax = computed(() => {
+  const max = student.value?.exam && exams.value?.[student.value.exam];
+  return max ? max.reduce((a, b) => a + b, 0) : null;
+});
+const scored = computed(() => (mocks.value ?? []).filter(m => m.total !== null));
+const lastScored = computed(() => scored.value.at(-1));
+const delta = computed(() => {
+  const [prev, last] = scored.value.slice(-2);
+  return prev && last ? last.total! - prev.total! : null;
+});
 const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString('ru', { day: 'numeric', month: 'short' }).replace('.', '');
 

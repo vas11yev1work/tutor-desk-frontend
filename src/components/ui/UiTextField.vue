@@ -6,11 +6,13 @@
     </label>
     <div
       :class="[
-        filled ? 'bg-field' : 'bg-white',
-        invalid ? 'border-[1.5px] border-alert' : 'border border-line',
+        dark
+          ? 'border border-[#48495a] bg-ink text-white focus-within:outline-accent'
+          : [filled ? 'bg-field' : 'bg-white', 'text-ink focus-within:outline-ink'],
+        invalid ? 'border-[1.5px] border-alert' : !dark && 'border border-line',
         multiline ? 'items-start py-3.5' : 'h-13 items-center',
       ]"
-      class="flex w-full gap-2.5 rounded-[14px] px-4 text-ink focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-ink"
+      class="flex w-full gap-2.5 rounded-[14px] px-4 focus-within:outline-2 focus-within:outline-offset-1"
     >
       <span v-if="$slots.icon" class="flex flex-none text-muted" aria-hidden="true"><slot name="icon" /></span>
       <textarea
@@ -47,6 +49,8 @@ defineProps<{
   multiline?: boolean;
   /** Приписка «— необязательно» к подписи. */
   optional?: boolean;
+  /** Тёмное поле на тёмной панели. */
+  dark?: boolean;
 }>();
 defineOptions({ inheritAttrs: false });
 const model = defineModel<string>({ required: true });

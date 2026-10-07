@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { checkPdf, formatFileSize } from '.';
+import { checkPdf, formatFileSize, formatTaskRange, splitParts } from '.';
 
 describe('assignments', () => {
   it('formatFileSize', () => {
@@ -14,5 +14,18 @@ describe('assignments', () => {
     expect(checkPdf(new File([new Uint8Array(21 * 1024 * 1024)], 'big.pdf', { type: 'application/pdf' }))).toBe(
       'Файл больше 20 МБ',
     );
+  });
+});
+
+describe('splitParts', () => {
+  it('ЕГЭ профиль: 12 по баллу и 7 развёрнутых', () => {
+    const max = [...Array<number>(12).fill(1), 2, 3, 2, 2, 3, 4, 4];
+    const { part1, part2 } = splitParts(max);
+    expect(formatTaskRange(part1)).toBe('1–12');
+    expect(formatTaskRange(part2)).toBe('13–19');
+  });
+
+  it('ЕГЭ база: только первая часть', () => {
+    expect(splitParts(Array<number>(21).fill(1)).part2).toEqual([]);
   });
 });

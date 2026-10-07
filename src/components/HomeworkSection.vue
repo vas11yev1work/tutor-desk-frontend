@@ -76,7 +76,7 @@
     <!-- Две зоны: слева домашка (несколько PDF), справа пробник (один PDF → «Пробник N») -->
     <div class="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-3">
       <div
-        v-for="zone in ZONES"
+        v-for="zone in zones"
         :key="zone.kind"
         :class="[
           dragging === zone.kind ? 'border-ink' : zone.kind === 'mock' ? 'border-[#b7d23a]' : 'border-[#c9ccd8]',
@@ -120,7 +120,7 @@
       </div>
     </div>
 
-    <p class="px-1 text-[13px] leading-[1.45] text-muted">
+    <p v-if="canGiveMock" class="px-1 text-[13px] leading-[1.45] text-muted">
       Файлы из левой зоны — обычная домашка. Файл из правой — пробник: он появится и в пробниках ученика, баллы внесёте
       после проверки.
     </p>
@@ -164,10 +164,12 @@ const files = computed(() =>
   }),
 );
 
-const ZONES = [
+// Пробник — только если у ученика выбран экзамен: без экзамена его не по чему оценить.
+const canGiveMock = computed(() => !!lesson.student.exam);
+const zones = computed(() => [
   { kind: 'homework' as const, title: 'Файлы домашки' },
-  { kind: 'mock' as const, title: 'Пробник' },
-];
+  ...(canGiveMock.value ? [{ kind: 'mock' as const, title: 'Пробник' }] : []),
+]);
 /** Номер следующего пробника — по номерам с бэка (нумерация сквозная по ученику). Пока не загрузились — неизвестен. */
 const nextMock = computed(() => mocks.value && Math.max(0, ...mocks.value.map(m => m.number)) + 1);
 

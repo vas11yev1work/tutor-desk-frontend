@@ -68,7 +68,17 @@ it('пересечение отмечается и у прошедших зан�
 });
 
 it('домашка: есть — homework, нет и меньше суток — noHomework, позже — normal', () => {
-  const hw = { id: 'h', kind: 'homework' as const, lessonId: 'a', fileName: 'Домашка.pdf', size: 1, createdAt: '' };
+  const hw = {
+    id: 'h',
+    kind: 'homework' as const,
+    lessonId: 'a',
+    fileName: 'Домашка.pdf',
+    size: 1,
+    createdAt: '',
+    scores: null,
+    total: null,
+    comment: null,
+  };
   const week = buildWeek(
     [lesson('a', at(7, 18), { assignments: [hw] }), lesson('b', at(8, 10)), lesson('c', at(9, 10))],
     monday,

@@ -53,5 +53,9 @@ const VARIANT = {
   /** Белая на тёмном фоне. */
   light: 'bg-white text-ink hover:bg-[#f6f7f9]',
   danger: 'bg-alert text-ink hover:bg-[#ff6a47]',
+  /** Лаймовая — главное действие на тёмной панели. */
+  accent: 'bg-accent text-ink hover:bg-[#c6ea36]',
+  /** Полупрозрачная на тёмном фоне. */
+  glass: 'border border-white/22 bg-white/10 text-white hover:bg-white/16',
 };
 </script>
