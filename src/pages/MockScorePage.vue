@@ -166,7 +166,7 @@
 
       <!-- Мобила: балл и сохранение внизу -->
       <div
-        class="fixed inset-x-0 bottom-0 z-10 flex items-center gap-3.5 rounded-t-[26px] bg-paper px-4 pt-4 pb-7 text-white md:hidden"
+        class="fixed inset-x-0 bottom-0 z-10 flex items-center gap-3.5 rounded-t-[26px] bg-paper px-4 pt-4 pb-[max(28px,env(safe-area-inset-bottom))] text-white md:hidden"
       >
         <div class="flex flex-1 flex-col gap-0.5">
           <span class="text-[11px] font-semibold tracking-[0.06em] text-accent uppercase">Первичный балл</span>
