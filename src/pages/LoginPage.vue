@@ -34,6 +34,7 @@
 
         <UiTextField
           v-model="login"
+          filled
           label="Логин"
           autocomplete="username"
           autocapitalize="off"
@@ -43,6 +44,7 @@
         />
         <UiTextField
           v-model="password"
+          filled
           label="Пароль"
           type="password"
           autocomplete="current-password"

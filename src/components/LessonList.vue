@@ -37,7 +37,9 @@
         Перенесено с {{ movedFrom(l)!.toLocaleDateString('ru', { weekday: 'short' }) }}
       </span>
     </div>
-    <p v-if="!lessons.length" :class="tiles ? 'px-2.5 py-4' : 'px-4.5 py-6'" class="text-center text-[15px] text-muted">{{ empty }}</p>
+    <p v-if="!lessons.length" :class="tiles ? 'px-2.5 py-4' : 'px-4.5 py-6'" class="text-center text-[15px] text-muted">
+      {{ empty }}
+    </p>
   </div>
 </template>
 
