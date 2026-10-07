@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/vue-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 
 import { api } from '@/api/client';
 import type { Exam, Student } from '@/api/types';
@@ -18,9 +18,26 @@ export const EXAM_TONE: Record<Exam | 'none', Tone> = {
   none: 'neutral',
 };
 
+/** Telegram из поля contact: «masha_sok» и «@masha_sok» → { label: '@masha_sok', url: 'https://t.me/masha_sok' }. */
+export const telegram = (contact: string | null) => {
+  const username = contact?.trim().replace(/^@/, '');
+  if (!username) return null;
+  return { label: `@${username}`, url: `https://t.me/${encodeURIComponent(username)}` };
+};
+
 /** «ЕГЭ профиль», «7 класс» или пусто. */
 export const studentCaption = (s: Pick<Student, 'grade' | 'exam'>) =>
   s.exam ? EXAM_LABEL[s.exam] : s.grade ? `${s.grade} класс` : '';
 
 export const useStudents = () =>
   useQuery({ queryKey: ['students'], queryFn: () => api.get<Student[]>('/api/admin/students') });
+
+export type NewStudent = Pick<Student, 'name' | 'grade' | 'exam' | 'contact' | 'notes'>;
+
+export const useCreateStudent = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: NewStudent) => api.post<Student>('/api/admin/students', body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['students'] }),
+  });
+};

@@ -12,7 +12,7 @@
           >{{ students.length }}</UiChip
         >
       </div>
-      <UiButton aria-label="Добавить ученика" class="max-md:w-11 max-md:px-0">
+      <UiButton aria-label="Добавить ученика" class="max-md:w-11 max-md:px-0" @click="adding = true">
         <Plus :size="20" :stroke-width="2" aria-hidden="true" />
         <span class="max-md:hidden">Добавить ученика</span>
       </UiButton>
@@ -45,7 +45,7 @@
 
     <!-- Десктоп: таблица -->
     <div v-if="students" class="hidden overflow-x-auto card md:block">
-      <div role="table" aria-label="Ученики" class="min-w-180">
+      <div role="table" aria-label="Ученики" class="min-w-175">
         <div
           role="row"
           :class="ROW"
@@ -63,9 +63,20 @@
           :class="ROW"
           class="min-h-16 border-b border-line-soft text-[14.5px] hover:bg-hover"
         >
-          <span role="cell" class="flex items-center gap-3">
+          <span role="cell" class="flex min-w-0 items-center gap-3">
             <UiAvatar :name="s.name" :tone="examTone(s)" />
-            <b class="text-[15px] font-semibold">{{ s.name }}</b>
+            <span class="flex min-w-0 flex-col items-start gap-px">
+              <b class="text-[15px] font-semibold">{{ s.name }}</b>
+              <a
+                v-if="telegram(s.contact)"
+                :href="telegram(s.contact)!.url"
+                target="_blank"
+                rel="noopener"
+                class="text-[13px] text-link hover:text-link-hover hover:underline"
+              >
+                {{ telegram(s.contact)!.label }}
+              </a>
+            </span>
           </span>
           <span role="cell" class="text-label">{{ gradeLabel(s) }}</span>
           <span role="cell">
@@ -99,6 +110,8 @@
       </div>
       <p v-if="!list.length" class="px-5 py-7 text-center text-sm text-muted">{{ emptyText }}</p>
     </div>
+
+    <NewStudentDialog v-model:open="adding" />
   </div>
 </template>
 
@@ -107,14 +120,15 @@ import { Plus, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { Student } from '@/api/types';
+import NewStudentDialog from '@/components/NewStudentDialog.vue';
 import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import UiTextField from '@/components/ui/UiTextField.vue';
 import { addDays, formatTime, pluralize, sameDay, startOfDay, startOfWeek, useLessons } from '@/features/lessons';
-import { EXAM_LABEL, EXAM_TONE, useStudents } from '@/features/students';
+import { EXAM_LABEL, EXAM_TONE, telegram, useStudents } from '@/features/students';
 
-const ROW = 'grid grid-cols-[2.2fr_1fr_1.2fr_1.4fr] items-center gap-3 px-5';
+const ROW = 'grid grid-cols-[2.4fr_1fr_1.3fr_1.4fr] items-center gap-3 px-5';
 
 const FILTERS = [
   { value: 'all', label: 'Все' },
@@ -125,6 +139,7 @@ const FILTERS = [
 
 const { data: students, error } = useStudents();
 const q = ref('');
+const adding = ref(false);
 const filter = ref<(typeof FILTERS)[number]['value']>('all');
 
 const group = (s: Student) => (!s.exam ? 'none' : s.exam === 'oge' ? 'oge' : 'ege');
