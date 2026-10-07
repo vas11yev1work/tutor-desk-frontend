@@ -1,12 +1,17 @@
 <template>
   <div class="flex flex-col gap-3.5 md:gap-5">
     <header class="flex items-center justify-between gap-4">
-      <h1 class="font-display text-[clamp(26px,3vw,34px)] font-semibold tracking-[-0.02em]">
-        Ученики
-        <span v-if="students" class="font-mono text-[17px] font-medium tracking-normal text-muted">
-          {{ students.length }}
-        </span>
-      </h1>
+      <div class="flex items-center gap-3">
+        <h1 class="font-display text-[clamp(26px,3vw,34px)] font-semibold tracking-[-0.02em]">Ученики</h1>
+        <UiChip
+          v-if="students"
+          tone="ink"
+          size="lg"
+          class="font-mono"
+          :aria-label="`${students.length} ${pluralize(students.length, ['ученик', 'ученика', 'учеников'])}`"
+          >{{ students.length }}</UiChip
+        >
+      </div>
       <UiButton aria-label="Добавить ученика" class="max-md:w-11 max-md:px-0">
         <Plus :size="20" :stroke-width="2" aria-hidden="true" />
         <span class="max-md:hidden">Добавить ученика</span>
@@ -59,18 +64,13 @@
           class="min-h-16 border-b border-line-soft text-[14.5px] hover:bg-hover"
         >
           <span role="cell" class="flex items-center gap-3">
-            <span
-              :class="tone(s)"
-              class="flex size-10.5 flex-none items-center justify-center rounded-full text-[13px] font-bold"
-            >
-              {{ initials(s.name) }}
-            </span>
+            <UiAvatar :name="s.name" :tone="examTone(s)" />
             <b class="text-[15px] font-semibold">{{ s.name }}</b>
           </span>
           <span role="cell" class="text-label">{{ gradeLabel(s) }}</span>
-          <span role="cell"
-            ><span :class="tone(s)" class="chip">{{ s.exam ? EXAM_LABEL[s.exam] : 'Без экзамена' }}</span></span
-          >
+          <span role="cell">
+            <UiChip :tone="examTone(s)">{{ s.exam ? EXAM_LABEL[s.exam] : 'Без экзамена' }}</UiChip>
+          </span>
           <span role="cell" class="font-mono text-[13.5px]">{{ nextLabel(s.id) }}</span>
         </div>
       </div>
@@ -85,12 +85,7 @@
         :class="i > 0 && 'border-t border-line-soft'"
         class="flex items-center gap-3 px-3.5 py-3"
       >
-        <span
-          :class="tone(s)"
-          class="flex size-10.5 flex-none items-center justify-center rounded-full text-[13px] font-bold"
-        >
-          {{ initials(s.name) }}
-        </span>
+        <UiAvatar :name="s.name" :tone="examTone(s)" />
         <span class="flex min-w-0 flex-1 flex-col gap-0.5">
           <b class="text-[15.5px] font-semibold">{{ s.name }}</b>
           <span class="text-[13px] text-muted">{{
@@ -112,10 +107,12 @@ import { Plus, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { Student } from '@/api/types';
+import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
+import UiChip from '@/components/ui/UiChip.vue';
 import UiTextField from '@/components/ui/UiTextField.vue';
-import { addDays, formatTime, sameDay, startOfDay, startOfWeek, useLessons } from '@/features/lessons';
-import { EXAM_LABEL, EXAM_TONE, initials, useStudents } from '@/features/students';
+import { addDays, formatTime, pluralize, sameDay, startOfDay, startOfWeek, useLessons } from '@/features/lessons';
+import { EXAM_LABEL, EXAM_TONE, useStudents } from '@/features/students';
 
 const ROW = 'grid grid-cols-[2.2fr_1fr_1.2fr_1.4fr] items-center gap-3 px-5';
 
@@ -141,7 +138,7 @@ const emptyText = computed(() =>
   q.value.trim() ? `Никого не нашли по запросу «${q.value.trim()}»` : 'Учеников пока нет',
 );
 
-const tone = (s: Student) => EXAM_TONE[s.exam ?? 'none'];
+const examTone = (s: Student) => EXAM_TONE[s.exam ?? 'none'];
 const gradeLabel = (s: Student) => (s.grade ? `${s.grade} класс` : 'не школьник');
 
 // Ближайшее занятие каждого ученика — из занятий на две недели вперёд.

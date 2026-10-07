@@ -32,10 +32,10 @@
       >
         {{ new Date(l.startsAt) <= now ? 'идёт' : formatIn(now, new Date(l.startsAt)) }}
       </span>
-      <span v-else-if="l.status === 'cancelled'" class="chip bg-danger-soft text-danger">Отменено</span>
-      <span v-else-if="movedFrom(l)" class="chip bg-warn-soft text-warn">
+      <UiChip v-else-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
+      <UiChip v-else-if="movedFrom(l)" tone="warn">
         Перенесено с {{ movedFrom(l)!.toLocaleDateString('ru', { weekday: 'short' }) }}
-      </span>
+      </UiChip>
     </div>
     <p v-if="!lessons.length" :class="tiles ? 'px-2.5 py-4' : 'px-4.5 py-6'" class="text-center text-[15px] text-muted">
       {{ empty }}
@@ -45,6 +45,7 @@
 
 <script setup lang="ts">
 import type { Lesson } from '@/api/types';
+import UiChip from '@/components/ui/UiChip.vue';
 import { formatIn, formatTime, lessonEnd, movedFrom } from '@/features/lessons';
 import { studentCaption } from '@/features/students';
 

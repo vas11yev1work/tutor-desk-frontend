@@ -72,7 +72,7 @@
             <div class="flex items-baseline gap-1.5 px-1 pt-1 pb-1.5">
               <b class="text-[13px] capitalize">{{ day.weekday }}</b>
               <span class="font-mono text-[13px] text-muted">{{ day.date.getDate() }}</span>
-              <span v-if="day.isToday" class="ml-auto chip h-5 bg-accent text-[11px]">сегодня</span>
+              <UiChip v-if="day.isToday" tone="accent" size="sm" class="ml-auto">сегодня</UiChip>
             </div>
             <div
               v-for="item in day.items"
@@ -107,6 +107,7 @@ import { useRouter } from 'vue-router';
 import type { Lesson } from '@/api/types';
 import LessonList from '@/components/LessonList.vue';
 import UiButton from '@/components/ui/UiButton.vue';
+import UiChip from '@/components/ui/UiChip.vue';
 import { useLogout } from '@/features/auth';
 import {
   addDays,

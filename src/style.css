@@ -43,18 +43,6 @@
   border-radius: 22px;
 }
 
-@utility chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 24px;
-  padding: 0 9px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 /* Подпись секции: «СЕГОДНЯ», «ТРЕБУЕТ ДЕЙСТВИЯ» */
 @utility section-title {
   font-size: 12px;

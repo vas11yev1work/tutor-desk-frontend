@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/vue-query';
 
 import { api } from '@/api/client';
 import type { Exam, Student } from '@/api/types';
+import type { Tone } from '@/components/ui/tones';
 
 export const EXAM_LABEL: Record<Exam, string> = {
   ege_profile: 'ЕГЭ профиль',
@@ -9,21 +10,13 @@ export const EXAM_LABEL: Record<Exam, string> = {
   oge: 'ОГЭ',
 };
 
-/** Цвета аватарки и чипа экзамена; none — без экзамена. */
-export const EXAM_TONE: Record<Exam | 'none', string> = {
-  ege_profile: 'bg-[#e9e6ff] text-[#3a2fd6]',
-  ege_base: 'bg-[#ffebdd] text-[#9a3b0b]',
-  oge: 'bg-[#ddf0ff] text-[#0b5a88]',
-  none: 'bg-chip text-label',
+/** Цвет аватарки и чипа экзамена; none — без экзамена. */
+export const EXAM_TONE: Record<Exam | 'none', Tone> = {
+  ege_profile: 'violet',
+  ege_base: 'peach',
+  oge: 'sky',
+  none: 'neutral',
 };
-
-/** «Маша Соколова» → «МС». */
-export const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(w => w[0]?.toUpperCase())
-    .join('');
 
 /** «ЕГЭ профиль», «7 класс» или пусто. */
 export const studentCaption = (s: Pick<Student, 'grade' | 'exam'>) =>
