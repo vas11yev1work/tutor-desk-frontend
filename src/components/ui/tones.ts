@@ -7,6 +7,7 @@ export const TONE = {
   danger: 'bg-danger-soft text-danger',
   warn: 'bg-warn-soft text-warn',
   accent: 'bg-accent text-ink',
+  alert: 'bg-alert text-ink',
   ink: 'bg-ink text-white',
   /** На тёмном фоне. */
   glass: 'bg-white/12 text-white',

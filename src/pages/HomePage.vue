@@ -121,6 +121,7 @@ import {
   startOfWeek,
   useLessons,
 } from '@/features/lessons';
+import { formatWeekRange } from '@/features/lessons/week';
 
 // Раз в минуту: «через 2 ч», подсветка ближайшего и смена дня в полночь.
 const now = ref(new Date());
@@ -214,12 +215,7 @@ const week = computed(() => {
   });
 });
 
-const weekLabel = computed(() => {
-  const [first, last] = [week.value[0]!.date, week.value[6]!.date];
-  return first.getMonth() === last.getMonth()
-    ? `${first.getDate()} – ${fmt(last, { day: 'numeric', month: 'long' })}`
-    : `${fmt(first, { day: 'numeric', month: 'long' })} – ${fmt(last, { day: 'numeric', month: 'long' })}`;
-});
+const weekLabel = computed(() => formatWeekRange(startOfWeek(now.value)));
 
 const router = useRouter();
 const { mutate: logoutMutate } = useLogout();

@@ -35,6 +35,8 @@ const SIZE = {
   sm: 'min-h-11 rounded-[14px] px-4 text-sm',
   md: 'min-h-11 rounded-[14px] px-4 text-[15px]',
   lg: 'min-h-13 rounded-2xl px-4.5 text-base',
+  /** Квадратная кнопка с иконкой. */
+  icon: 'size-11 flex-none rounded-[14px]',
 };
 
 const VARIANT = {
