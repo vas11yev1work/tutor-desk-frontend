@@ -5,7 +5,14 @@
       <span class="text-[13px] text-muted">Ученик видит её сразу</span>
     </div>
 
-    <input ref="picker" type="file" accept="application/pdf,.pdf" multiple class="hidden" @change="onPick" />
+    <input
+      ref="picker"
+      type="file"
+      accept="application/pdf,.pdf"
+      :multiple="pickKind === 'homework'"
+      class="hidden"
+      @change="onPick"
+    />
 
     <!-- Файлы занятия -->
     <div v-if="files.length" class="flex flex-col overflow-hidden card">
@@ -66,41 +73,62 @@
       </div>
     </div>
 
-    <!-- Зона загрузки: под списком всегда, пустая — крупнее -->
-    <div
-      :class="[dragging ? 'border-ink' : 'border-[#c9ccd8]', !files.length && 'min-h-75']"
-      class="flex flex-col items-center justify-center gap-3.5 rounded-[22px] border-2 border-dashed bg-white bg-[linear-gradient(#f1f2f5_1px,transparent_1px),linear-gradient(90deg,#f1f2f5_1px,transparent_1px)] bg-size-[22px_22px] p-5.5 text-center"
-      @dragover.prevent="dragging = true"
-      @dragleave="dragging = false"
-      @drop.prevent="onDrop"
-    >
-      <div v-if="!files.length" class="flex flex-col items-center gap-1.5">
-        <div class="mb-2 flex size-15 -rotate-4 items-center justify-center rounded-[18px] bg-ink text-accent">
-          <Upload :size="28" :stroke-width="1.9" aria-hidden="true" />
+    <!-- Две зоны: слева домашка (несколько PDF), справа пробник (один PDF → «Пробник N») -->
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-3">
+      <div
+        v-for="zone in ZONES"
+        :key="zone.kind"
+        :class="[
+          dragging === zone.kind ? 'border-ink' : zone.kind === 'mock' ? 'border-[#b7d23a]' : 'border-[#c9ccd8]',
+          zone.kind === 'mock' ? 'bg-[#fbfdf0]' : 'bg-white',
+          !files.length && 'min-h-65',
+        ]"
+        class="flex flex-col items-center justify-center gap-3.5 rounded-[22px] border-2 border-dashed bg-[linear-gradient(#f1f2f5_1px,transparent_1px),linear-gradient(90deg,#f1f2f5_1px,transparent_1px)] bg-size-[22px_22px] p-5.5 text-center"
+        @dragover.prevent="dragging = zone.kind"
+        @dragleave="dragging = null"
+        @drop.prevent="onDrop($event, zone.kind)"
+      >
+        <div
+          v-if="zone.kind === 'mock'"
+          class="flex size-12 -rotate-4 items-center justify-center rounded-[14px] bg-accent font-display text-[15px] font-bold text-ink"
+        >
+          П{{ nextMock ?? '…' }}
         </div>
-        <div class="font-display text-xl font-semibold tracking-[-0.02em]">Перетащите PDF сюда</div>
-        <div class="text-[14.5px] text-muted">Можно несколько файлов. Или выдайте пробник как домашку.</div>
-      </div>
-      <span v-else class="text-sm text-muted">Перетащите сюда ещё PDF</span>
-
-      <div class="flex flex-wrap justify-center gap-2">
-        <UiButton size="sm" :loading="uploading && pickKind === 'homework'" @click="pick('homework')">
-          <Upload :size="18" :stroke-width="2" aria-hidden="true" />Добавить PDF
-        </UiButton>
-        <UiButton variant="ghost" size="sm" :loading="uploading && pickKind === 'mock'" @click="pick('mock')">
-          <Pencil :size="18" :stroke-width="2" aria-hidden="true" />Выдать пробник
+        <div v-else class="flex size-12 items-center justify-center rounded-[14px] bg-ink text-accent">
+          <Upload :size="22" :stroke-width="1.9" aria-hidden="true" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-base font-bold">{{ zone.title }}</span>
+          <span class="text-[13.5px] text-muted">
+            {{
+              zone.kind === 'mock'
+                ? nextMock
+                  ? `PDF варианта станет «Пробником ${nextMock}»`
+                  : 'PDF варианта станет пробником'
+                : 'Перетащите PDF сюда — можно несколько'
+            }}
+          </span>
+        </div>
+        <UiButton
+          :variant="zone.kind === 'mock' ? 'ghost' : 'ink'"
+          size="sm"
+          :loading="uploading && pickKind === zone.kind"
+          @click="pick(zone.kind)"
+        >
+          {{ zone.kind === 'mock' ? 'Выбрать файл' : 'Выбрать файлы' }}
         </UiButton>
       </div>
     </div>
 
     <p class="px-1 text-[13px] leading-[1.45] text-muted">
-      Пробник, выданный как домашка, появится и в пробниках ученика — баллы внесёте после проверки.
+      Файлы из левой зоны — обычная домашка. Файл из правой — пробник: он появится и в пробниках ученика, баллы внесёте
+      после проверки.
     </p>
   </section>
 </template>
 
 <script setup lang="ts">
-import { Pencil, Upload, X } from '@lucide/vue';
+import { Upload, X } from '@lucide/vue';
 import { computed, ref, useTemplateRef } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -136,9 +164,16 @@ const files = computed(() =>
   }),
 );
 
+const ZONES = [
+  { kind: 'homework' as const, title: 'Файлы домашки' },
+  { kind: 'mock' as const, title: 'Пробник' },
+];
+/** Номер следующего пробника — по номерам с бэка (нумерация сквозная по ученику). Пока не загрузились — неизвестен. */
+const nextMock = computed(() => mocks.value && Math.max(0, ...mocks.value.map(m => m.number)) + 1);
+
 const picker = useTemplateRef('picker');
-const dragging = ref(false);
-/** Каким видом загрузить выбранные в диалоге файлы. Перетаскивание — всегда домашка. */
+const dragging = ref<Assignment['kind'] | null>(null);
+/** В какую зону выбирают файлы через диалог. */
 const pickKind = ref<Assignment['kind']>('homework');
 const removing = ref<string | null>(null);
 
@@ -175,11 +210,12 @@ const onPick = (e: Event) => {
   input.value = '';
   if (list.length) void uploadAll(list, pickKind.value);
 };
-const onDrop = (e: DragEvent) => {
-  dragging.value = false;
-  pickKind.value = 'homework';
+// В зону пробника — один файл: один PDF = один пробник.
+const onDrop = (e: DragEvent, kind: Assignment['kind']) => {
+  dragging.value = null;
+  pickKind.value = kind;
   const list = [...(e.dataTransfer?.files ?? [])];
-  if (list.length) void uploadAll(list, 'homework');
+  if (list.length) void uploadAll(kind === 'mock' ? list.slice(0, 1) : list, kind);
 };
 
 const remove = async (id: string) => {
