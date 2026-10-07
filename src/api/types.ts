@@ -39,3 +39,19 @@ export interface Lesson {
   isModified: boolean;
   student: Pick<Student, 'id' | 'name' | 'grade' | 'exam'>;
 }
+
+/** GET /api/admin/students/:id/series — действующие правила, по одному на день недели. */
+export interface Series {
+  id: string;
+  studentId: string;
+  /** 1–7, ISO: 1 — понедельник. */
+  weekday: number;
+  /** 'HH:MM' в поясе timezone. */
+  startTime: string;
+  durationMin: number;
+  timezone: string;
+  /** 'YYYY-MM-DD'. */
+  startsOn: string;
+  /** 'YYYY-MM-DD' включительно; null — бессрочно. */
+  endsOn: string | null;
+}

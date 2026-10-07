@@ -1,5 +1,5 @@
 <template>
-  <UiDialog v-model:open="open" title="Новый ученик">
+  <UiDialog v-model:open="open" :title="student ? 'Изменить ученика' : 'Новый ученик'">
     <form :id="formId" class="contents" @submit.prevent="submit">
       <UiTextField v-model="name" label="Имя и фамилия" placeholder="Например, Маша Соколова" required />
 
@@ -27,7 +27,7 @@
         placeholder="Что важно помнить про ученика"
       />
 
-      <UiHint>
+      <UiHint v-if="!student">
         <template #icon><Link :size="16" :stroke-width="2" /></template>
         Личная ссылка для ученика появится в карточке сразу после добавления.
       </UiHint>
@@ -35,24 +35,31 @@
 
     <template #footer>
       <UiButton variant="ghost" size="lg" class="max-md:hidden" @click="open = false">Отмена</UiButton>
-      <UiButton type="submit" :form="formId" size="lg" :loading="isPending">Добавить ученика</UiButton>
+      <UiButton type="submit" :form="formId" size="lg" :loading="isPending">
+        {{ student ? 'Сохранить' : 'Добавить ученика' }}
+      </UiButton>
     </template>
   </UiDialog>
 </template>
 
 <script setup lang="ts">
 import { Info, Link } from '@lucide/vue';
-import { ref, useId, watch } from 'vue';
+import { computed, ref, useId, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
-import type { Exam } from '@/api/types';
+import type { Exam, Student } from '@/api/types';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChoice from '@/components/ui/UiChoice.vue';
 import UiDialog from '@/components/ui/UiDialog.vue';
 import UiHint from '@/components/ui/UiHint.vue';
 import UiTextField from '@/components/ui/UiTextField.vue';
-import { EXAM_LABEL, useCreateStudent } from '@/features/students';
+import { EXAM_LABEL, type NewStudent, useCreateStudent, useUpdateStudent } from '@/features/students';
 
+const { student = undefined } = defineProps<{
+  /** Есть — редактирование, нет — новый ученик. */
+  student?: Student;
+}>();
+const emit = defineEmits<{ saved: [student: Student] }>();
 const open = defineModel<boolean>('open', { required: true });
 
 // 'none' — явно выбрано «не школьник» / «без экзамена»; undefined — не выбрано. На бэк оба уходят как null.
@@ -72,27 +79,40 @@ const exam = ref<Exam | 'none'>();
 const contact = ref('');
 const notes = ref('');
 
+// При открытии — пустая форма или данные ученика; null в сохранённом = «не школьник» / «без экзамена».
 watch(open, v => {
   if (!v) return;
-  name.value = contact.value = notes.value = '';
-  grade.value = exam.value = undefined;
+  name.value = student?.name ?? '';
+  grade.value = student ? (student.grade ?? 'none') : undefined;
+  exam.value = student ? (student.exam ?? 'none') : undefined;
+  contact.value = student?.contact ?? '';
+  notes.value = student?.notes ?? '';
 });
 
-const { mutate, isPending } = useCreateStudent();
+const create = useCreateStudent();
+const update = useUpdateStudent(() => student?.id ?? '');
+const isPending = computed(() => create.isPending.value || update.isPending.value);
 const orNull = <T,>(v: T | 'none' | undefined) => (v === 'none' || v === undefined ? null : v);
 
-const submit = () =>
-  mutate(
-    {
-      name: name.value,
-      grade: orNull(grade.value),
-      exam: orNull(exam.value),
-      contact: contact.value.trim() || null,
-      notes: notes.value.trim() || null,
+const submit = () => {
+  const body: NewStudent = {
+    name: name.value,
+    grade: orNull(grade.value),
+    exam: orNull(exam.value),
+    contact: contact.value.trim() || null,
+    notes: notes.value.trim() || null,
+  };
+  const options = {
+    onSuccess: (saved: Student) => {
+      open.value = false;
+      emit('saved', saved);
     },
-    {
-      onSuccess: () => (open.value = false),
-      onError: () => toast.error('Не удалось добавить ученика. Попробуйте ещё раз'),
-    },
-  );
+    onError: () =>
+      toast.error(
+        student ? 'Не удалось сохранить. Попробуйте ещё раз' : 'Не удалось добавить ученика. Попробуйте ещё раз',
+      ),
+  };
+  if (student) update.mutate(body, options);
+  else create.mutate(body, options);
+};
 </script>

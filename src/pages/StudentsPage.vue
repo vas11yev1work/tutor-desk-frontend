@@ -61,18 +61,24 @@
           :key="s.id"
           role="row"
           :class="ROW"
-          class="min-h-16 border-b border-line-soft text-[14.5px] hover:bg-hover"
+          class="relative min-h-16 border-b border-line-soft text-[14.5px] hover:bg-hover"
         >
           <span role="cell" class="flex min-w-0 items-center gap-3">
             <UiAvatar :name="s.name" :tone="examTone(s)" />
             <span class="flex min-w-0 flex-col items-start gap-px">
-              <b class="text-[15px] font-semibold">{{ s.name }}</b>
+              <!-- after: растягивает ссылку на всю строку -->
+              <RouterLink
+                :to="`/students/${s.id}`"
+                class="text-[15px] font-semibold after:absolute after:inset-0 after:content-['']"
+              >
+                {{ s.name }}
+              </RouterLink>
               <a
                 v-if="telegram(s.contact)"
                 :href="telegram(s.contact)!.url"
                 target="_blank"
                 rel="noopener"
-                class="text-[13px] text-link hover:text-link-hover hover:underline"
+                class="relative z-10 text-[13px] text-link hover:text-link-hover hover:underline"
               >
                 {{ telegram(s.contact)!.label }}
               </a>
@@ -90,11 +96,12 @@
 
     <!-- Мобила: список -->
     <div v-if="students" class="flex flex-col overflow-hidden card md:hidden">
-      <div
+      <RouterLink
         v-for="(s, i) in list"
         :key="s.id"
+        :to="`/students/${s.id}`"
         :class="i > 0 && 'border-t border-line-soft'"
-        class="flex items-center gap-3 px-3.5 py-3"
+        class="flex items-center gap-3 px-3.5 py-3 hover:bg-hover"
       >
         <UiAvatar :name="s.name" :tone="examTone(s)" />
         <span class="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -107,20 +114,21 @@
           <span class="font-mono text-lg font-semibold">{{ fmtWeekday(next.get(s.id)!) }}</span>
           <span class="text-[11px] text-muted">{{ formatTime(next.get(s.id)!) }}</span>
         </span>
-      </div>
+      </RouterLink>
       <p v-if="!list.length" class="px-5 py-7 text-center text-sm text-muted">{{ emptyText }}</p>
     </div>
 
-    <NewStudentDialog v-model:open="adding" />
+    <StudentFormDialog v-model:open="adding" @saved="s => router.push(`/students/${s.id}`)" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { Plus, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import type { Student } from '@/api/types';
-import NewStudentDialog from '@/components/NewStudentDialog.vue';
+import StudentFormDialog from '@/components/StudentFormDialog.vue';
 import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
@@ -140,6 +148,7 @@ const FILTERS = [
 const { data: students, error } = useStudents();
 const q = ref('');
 const adding = ref(false);
+const router = useRouter();
 const filter = ref<(typeof FILTERS)[number]['value']>('all');
 
 const group = (s: Student) => (!s.exam ? 'none' : s.exam === 'oge' ? 'oge' : 'ege');

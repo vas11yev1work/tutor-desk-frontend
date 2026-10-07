@@ -8,6 +8,8 @@ export const TONE = {
   warn: 'bg-warn-soft text-warn',
   accent: 'bg-accent text-ink',
   ink: 'bg-ink text-white',
+  /** На тёмном фоне. */
+  glass: 'bg-white/12 text-white',
 } as const;
 
 export type Tone = keyof typeof TONE;

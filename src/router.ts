@@ -22,6 +22,7 @@ export const router = createRouter({
         { path: '', component: () => import('@/pages/HomePage.vue') },
         { path: 'schedule', component: () => import('@/pages/SchedulePage.vue') },
         { path: 'students', component: () => import('@/pages/StudentsPage.vue') },
+        { path: 'students/:id', component: () => import('@/pages/StudentDetailsPage.vue') },
       ],
     },
     { path: '/s/:token', component: () => import('@/pages/StudentPage.vue') },
