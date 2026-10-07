@@ -12,11 +12,19 @@
   --color-muted: #5a5e76;
   --color-line: #d9dce4;
   --color-line-soft: #edeef2;
+  --color-line-card: #e3e5eb;
   --color-field: #f7f8fa;
   --color-accent: #d4f54c;
+  --color-link: #3a2fd6;
+  --color-link-hover: #251c9e;
+  --color-subtle: #8a8da0;
+  --color-hover: #fafafb;
+  --color-chip: #ecedf1;
+  --color-warn-soft: #fff1c2;
+  --color-warn: #6e4b00;
   --color-danger: #b4320f;
   --color-danger-soft: #ffe6de;
-  --color-alert: #ff9b80;
+  --color-alert: #ff7a5b;
 }
 
 /* Тёмный «тетрадный лист» в клетку */
@@ -27,6 +35,33 @@
     linear-gradient(90deg, rgb(255 255 255 / 0.07) 1px, transparent 1px);
   background-size: 22px 22px;
   background-position: -1px -1px;
+}
+
+@utility card {
+  background-color: white;
+  border: 1px solid var(--color-line-card);
+  border-radius: 22px;
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Подпись секции: «СЕГОДНЯ», «ТРЕБУЕТ ДЕЙСТВИЯ» */
+@utility section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
 }
 
 body {

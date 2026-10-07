@@ -14,7 +14,16 @@ export const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', component: () => import('@/pages/LoginPage.vue') },
-    { path: '/', component: () => import('@/pages/HomePage.vue'), meta: { requiresAuth: true } },
+    {
+      path: '/',
+      component: () => import('@/components/AppLayout.vue'),
+      meta: { requiresAuth: true },
+      children: [
+        { path: '', component: () => import('@/pages/HomePage.vue') },
+        { path: 'schedule', component: () => import('@/pages/SchedulePage.vue') },
+        { path: 'students', component: () => import('@/pages/StudentsPage.vue') },
+      ],
+    },
     { path: '/s/:token', component: () => import('@/pages/StudentPage.vue') },
   ],
 });

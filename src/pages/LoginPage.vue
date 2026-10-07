@@ -50,7 +50,7 @@
           :invalid="!!error"
         />
 
-        <UiButton type="submit" class="mt-1" :loading="isPending">
+        <UiButton type="submit" size="lg" class="mt-1" :loading="isPending">
           {{ isPending ? 'Входим…' : 'Войти' }}
         </UiButton>
 
