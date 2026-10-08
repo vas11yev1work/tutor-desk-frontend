@@ -10,8 +10,12 @@
       class="flex items-center gap-3 py-2.5"
     >
       <div
-        :class="f.number ? 'items-center font-display text-[13px] font-bold' : 'items-end pb-1.5'"
-        class="flex h-12 w-10 flex-none justify-center rounded-[9px] bg-ink text-accent"
+        :class="
+          f.number
+            ? 'items-center bg-accent font-display text-[13px] font-bold text-ink'
+            : 'items-end bg-ink pb-1.5 text-accent'
+        "
+        class="flex h-12 w-10 flex-none justify-center rounded-[9px]"
       >
         <span v-if="f.number">П{{ f.number }}</span>
         <span v-else class="font-mono text-[9.5px] font-semibold">PDF</span>
