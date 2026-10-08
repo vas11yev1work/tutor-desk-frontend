@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 import { api } from '@/api/client';
 
@@ -20,14 +21,19 @@ export const themeStorageKey = (token?: string) => (token ? `td-theme:${token}` 
 /** Текущая тема на <html>; начальное значение проставил скрипт в index.html из localStorage. */
 export const currentTheme = ref(document.documentElement.dataset.theme ?? 'lime');
 
-export const applyTheme = (theme: string, token?: string) => {
-  currentTheme.value = theme;
-  document.documentElement.dataset.theme = theme;
+/** Запомнить тему для index.html: следующая загрузка кабинета или портала ученика сразу в ней. */
+export const rememberTheme = (theme: string, token?: string) => {
   try {
     localStorage.setItem(themeStorageKey(token), theme);
   } catch {
     // приватный режим — тема просто не переживёт перезагрузку
   }
+};
+
+export const applyTheme = (theme: string, token?: string) => {
+  currentTheme.value = theme;
+  document.documentElement.dataset.theme = theme;
+  rememberTheme(theme, token);
   // Иконка вкладки; лайм — общая /favicon.svg, она же у ico и PWA
   const favicon = theme !== 'lime' && THEMES.some(t => t.id === theme) ? `/favicons/${theme}.svg` : '/favicon.svg';
   document.getElementById('favicon')?.setAttribute('href', favicon);
@@ -45,10 +51,24 @@ const settingsKey = ['settings'];
 export const useSettings = () =>
   useQuery({ queryKey: settingsKey, queryFn: () => api.get<Settings>('/api/admin/settings') });
 
-export const useUpdateSettings = () => {
+/** Смена темы кабинета: применяется сразу, сохраняется на бэкенде вдогонку; при ошибке — откат. */
+export const useSetTutorTheme = () => {
   const qc = useQueryClient();
-  return useMutation({
+  const { mutate } = useMutation({
     mutationFn: (body: Settings) => api.patch<Settings>('/api/admin/settings', body),
     onSuccess: data => qc.setQueryData(settingsKey, data),
   });
+  return (theme: string) => {
+    const prev = currentTheme.value;
+    applyTheme(theme);
+    mutate(
+      { theme },
+      {
+        onError: () => {
+          applyTheme(prev);
+          toast.error('Не удалось сменить тему. Попробуйте ещё раз');
+        },
+      },
+    );
+  };
 };

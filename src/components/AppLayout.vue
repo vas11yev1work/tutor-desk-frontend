@@ -23,7 +23,7 @@
         </RouterLink>
       </nav>
       <div class="mt-auto flex flex-col gap-2">
-        <ThemePicker />
+        <ThemePicker :model-value="currentTheme" @update:model-value="setTheme" />
         <button
           type="button"
           class="flex min-h-11.5 cursor-pointer items-center gap-3 rounded-[14px] px-3.5 text-[15px] font-semibold text-white/75 transition-colors hover:bg-white/8 hover:text-white"
@@ -72,7 +72,7 @@ import ThemePicker from '@/components/ThemePicker.vue';
 import UiLogo from '@/components/ui/UiLogo.vue';
 import { useLogout } from '@/features/auth';
 import { useStudents } from '@/features/students';
-import { applyTheme, useSettings } from '@/features/theme';
+import { applyTheme, currentTheme, useSettings, useSetTutorTheme } from '@/features/theme';
 
 const nav = [
   { to: '/', label: 'Сегодня', icon: House },
@@ -83,6 +83,7 @@ const nav = [
 // Тема из localStorage уже стоит (index.html), бэкенд — источник правды, если её сменили на другом устройстве.
 const { data: settings } = useSettings();
 watch(settings, s => s && applyTheme(s.theme), { immediate: true });
+const setTheme = useSetTutorTheme();
 
 const route = useRoute();
 const { data: students } = useStudents();

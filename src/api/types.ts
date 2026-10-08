@@ -45,6 +45,8 @@ export interface Student {
   exam: Exam | null;
   contact: string | null;
   notes: string | null;
+  /** Тема кабинета ученика (id из features/theme). */
+  theme: string;
   accessToken: string;
   createdAt: string;
   updatedAt: string;

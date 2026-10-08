@@ -27,7 +27,12 @@
         <UiButton @click="adding = true"><Plus :size="18" :stroke-width="2" aria-hidden="true" />Занятие</UiButton>
       </div>
 
-      <ThemePicker compact class="absolute! top-5 right-18 md:hidden" />
+      <ThemePicker
+        :model-value="currentTheme"
+        variant="compact"
+        class="absolute! top-5 right-18 md:hidden"
+        @update:model-value="setTheme"
+      />
       <button
         type="button"
         aria-label="Выйти"
@@ -138,6 +143,7 @@ import {
   useLessons,
 } from '@/features/lessons';
 import { buildWeek, clashIds, formatWeekRange, type WeekItem, type WeekItemKind } from '@/features/lessons/week';
+import { currentTheme, useSetTutorTheme } from '@/features/theme';
 
 // Раз в минуту: «через 2 ч», подсветка ближайшего и смена дня в полночь.
 const adding = ref(false);
@@ -205,6 +211,7 @@ const isStruck = (item: WeekItem) => item.kind === 'cancelled' || item.kind === 
 
 const weekLabel = computed(() => formatWeekRange(startOfWeek(now.value)));
 
+const setTheme = useSetTutorTheme();
 const router = useRouter();
 const { mutate: logoutMutate } = useLogout();
 const logout = () => logoutMutate(undefined, { onSuccess: () => router.replace('/login') });

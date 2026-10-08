@@ -52,8 +52,12 @@ export const useStudent = (id: MaybeRefOrGetter<string>) =>
 export const useUpdateStudent = (id: MaybeRefOrGetter<string>) => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: Partial<NewStudent>) => api.patch<Student>(`/api/admin/students/${toValue(id)}`, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['students'] }),
+    mutationFn: (body: Partial<NewStudent & Pick<Student, 'theme'>>) =>
+      api.patch<Student>(`/api/admin/students/${toValue(id)}`, body),
+    onSuccess: student => {
+      qc.setQueryData(['students', toValue(id)], student);
+      void qc.invalidateQueries({ queryKey: ['students'] });
+    },
   });
 };
 

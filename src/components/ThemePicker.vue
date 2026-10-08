@@ -3,8 +3,12 @@
     <div
       v-if="open"
       role="listbox"
-      aria-label="Тема"
-      :class="compact ? 'top-[calc(100%+8px)] -right-13 w-57.5' : 'inset-x-0 bottom-[calc(100%+8px)]'"
+      :aria-label="label"
+      :class="{
+        'inset-x-0 bottom-[calc(100%+8px)]': variant === 'sidebar',
+        'top-[calc(100%+8px)] -right-13 w-57.5': variant === 'compact',
+        'inset-x-0 top-[calc(100%+8px)]': variant === 'field',
+      }"
       class="absolute z-40 flex flex-col gap-0.5 rounded-2xl border border-line-card bg-white p-1.5 text-ink shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]"
     >
       <button
@@ -23,9 +27,9 @@
     </div>
 
     <button
-      v-if="compact"
+      v-if="variant === 'compact'"
       type="button"
-      :aria-label="`Тема: ${active.name}`"
+      :aria-label="`${label}: ${active.name}`"
       :aria-expanded="open"
       aria-haspopup="listbox"
       class="flex size-11 cursor-pointer items-center justify-center rounded-[14px] border border-white/22 bg-white/8"
@@ -36,30 +40,43 @@
     <button
       v-else
       type="button"
-      :aria-label="`Тема: ${active.name}`"
+      :aria-label="`${label}: ${active.name}`"
       :aria-expanded="open"
       aria-haspopup="listbox"
-      class="flex min-h-11.5 w-full cursor-pointer items-center gap-3 rounded-[14px] border border-ink-line bg-ink px-3.5 text-left text-[15px] font-semibold text-white transition-colors hover:bg-ink-hover"
+      :class="variant === 'field' ? 'h-13 px-4' : 'min-h-11.5 px-3.5'"
+      class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] border border-ink-line bg-ink text-left text-[15px] font-semibold text-white transition-colors hover:bg-ink-hover"
       @click="open = !open"
     >
       <span class="size-5 flex-none rounded-[7px] border-[1.5px] border-white" :style="swatch(active)" />
       <span class="flex-1">{{ active.name }}</span>
-      <ChevronUp :size="16" :stroke-width="2" class="opacity-70" aria-hidden="true" />
+      <component
+        :is="variant === 'field' ? ChevronDown : ChevronUp"
+        :size="variant === 'field' ? 18 : 16"
+        :stroke-width="2"
+        class="opacity-70"
+        aria-hidden="true"
+      />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Check, ChevronUp } from '@lucide/vue';
+import { Check, ChevronDown, ChevronUp } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue';
-import { toast } from 'vue-sonner';
 
-import { applyTheme, currentTheme, THEMES, useUpdateSettings } from '@/features/theme';
+import { THEMES } from '@/features/theme';
 
-/** compact — квадратная кнопка в шапке на мобиле, список открывается вниз; иначе — кнопка в сайдбаре, список вверх. */
-const { compact = false } = defineProps<{ compact?: boolean }>();
+/**
+ * sidebar — кнопка в сайдбаре, список вверх; compact — квадратная кнопка в шапке на мобиле, список вниз;
+ * field — поле на тёмной панели (тема кабинета ученика), список вниз.
+ */
+const { variant = 'sidebar', label = 'Тема' } = defineProps<{
+  variant?: 'sidebar' | 'compact' | 'field';
+  label?: string;
+}>();
+const model = defineModel<string>({ required: true });
 
-const active = computed(() => THEMES.find(t => t.id === currentTheme.value) ?? THEMES[0]!);
+const active = computed(() => THEMES.find(t => t.id === model.value) ?? THEMES[0]!);
 const swatch = (t: (typeof THEMES)[number]) => ({
   background: `linear-gradient(135deg, ${t.ink} 0 50%, ${t.accent} 50% 100%)`,
 });
@@ -72,20 +89,8 @@ const closeOutside = (e: Event) => {
 watch(open, o => document[o ? 'addEventListener' : 'removeEventListener']('pointerdown', closeOutside));
 onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOutside));
 
-const { mutate } = useUpdateSettings();
-// Тема меняется сразу, сохранение на бэкенде — вдогонку; при ошибке откатываемся.
 const pick = (theme: string) => {
   open.value = false;
-  const prev = currentTheme.value;
-  applyTheme(theme);
-  mutate(
-    { theme },
-    {
-      onError: () => {
-        applyTheme(prev);
-        toast.error('Не удалось сменить тему. Попробуйте ещё раз');
-      },
-    },
-  );
+  model.value = theme;
 };
 </script>

@@ -74,6 +74,16 @@
             </button>
           </div>
 
+          <div class="flex flex-col gap-2">
+            <span :class="CAPTION">Тема кабинета</span>
+            <ThemePicker
+              :model-value="studentTheme"
+              variant="field"
+              label="Тема кабинета ученика"
+              @update:model-value="setStudentTheme"
+            />
+          </div>
+
           <div class="-mt-2 flex gap-2 min-[980px]:max-[1200px]:mt-0">
             <UiButton variant="light" size="sm" class="flex-1" @click="editing = true">
               <Pencil :size="16" :stroke-width="2" aria-hidden="true" />Изменить
@@ -268,6 +278,7 @@ import type { Lesson, Series } from '@/api/types';
 import EditSeriesDialog from '@/components/EditSeriesDialog.vue';
 import NewLessonDialog from '@/components/NewLessonDialog.vue';
 import StudentFormDialog from '@/components/StudentFormDialog.vue';
+import ThemePicker from '@/components/ThemePicker.vue';
 import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
@@ -285,8 +296,10 @@ import {
   useStudent,
   useStudentLessons,
   useStudentSeries,
+  useUpdateStudent,
   weekdayLong,
 } from '@/features/students';
+import { rememberTheme } from '@/features/theme';
 
 const CAPTION = 'text-xs font-semibold tracking-[0.06em] text-white/60 uppercase';
 
@@ -324,6 +337,21 @@ const regenerateLink = () =>
     },
     onError: () => toast.error('Не удалось перевыпустить ссылку'),
   });
+
+// Тема кабинета ученика: выбранная видна сразу, пока идёт сохранение
+const { mutate: updateStudent, variables: themeVars, isPending: savingTheme } = useUpdateStudent(id);
+const studentTheme = computed(
+  () => (savingTheme.value ? themeVars.value?.theme : undefined) ?? student.value?.theme ?? 'lime',
+);
+// Портал ученика, открытый в этом браузере, тоже сразу в новой теме
+const setStudentTheme = (theme: string) =>
+  updateStudent(
+    { theme },
+    {
+      onSuccess: s => rememberTheme(s.theme, s.accessToken),
+      onError: () => toast.error('Не удалось сменить тему. Попробуйте ещё раз'),
+    },
+  );
 
 const { mutate: deleteStudent, isPending: deleting } = useDeleteStudent(id);
 const confirmingDelete = ref(false);
