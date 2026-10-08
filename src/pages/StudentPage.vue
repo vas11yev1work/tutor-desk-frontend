@@ -44,71 +44,74 @@
             </div>
             <span class="text-[15px]">{{ longDate(new Date(next.startsAt)) }} · {{ next.durationMin }} минут</span>
           </div>
-          <div class="flex flex-col rounded-[20px] bg-white px-3.5 py-1.5">
-            <template v-if="next.assignments.length">
-              <div class="pt-2 pb-1 text-[13px] font-semibold text-muted">Домашка · {{ next.assignments.length }}</div>
-              <div
-                v-for="(a, i) in next.assignments"
-                :key="a.id"
-                :class="i > 0 && 'border-t border-line-soft'"
-                class="flex items-center gap-3 py-2.5"
-              >
-                <div
-                  :class="a.kind === 'mock' ? 'items-center font-display text-[13px] font-bold' : 'items-end pb-1.5'"
-                  class="flex h-12 w-10 flex-none justify-center rounded-[9px] bg-ink text-accent"
-                >
-                  <span v-if="a.kind === 'mock'">П{{ mockNumber(a.id) }}</span>
-                  <span v-else class="font-mono text-[9.5px] font-semibold">PDF</span>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <div class="truncate text-[15px] font-semibold">{{ fileTitle(a) }}</div>
-                  <div class="text-[13px] text-muted">{{ a.kind === 'mock' ? 'Пробник' : 'PDF' }}</div>
-                </div>
-                <UiButton :href="fileUrl(a.id)" target="_blank" rel="noopener" size="sm">Открыть</UiButton>
-                <UiButton
-                  :href="fileUrl(a.id)"
-                  :download="a.fileName"
-                  :aria-label="`Скачать ${a.fileName}`"
-                  variant="soft"
-                  size="icon"
-                  class="max-md:hidden"
-                >
-                  <Download :size="18" :stroke-width="1.9" aria-hidden="true" />
-                </UiButton>
-              </div>
-            </template>
-            <p v-else class="py-3 text-[15px] text-muted">Домашка появится позже</p>
-          </div>
+          <PortalFiles
+            v-if="next.assignments.length"
+            :files="files(next)"
+            class="rounded-[20px] bg-white px-3.5 py-1.5"
+          />
+          <p v-else class="rounded-[20px] bg-white px-3.5 py-4.5 text-[15px] text-muted">Домашка появится позже</p>
         </section>
 
         <!-- Остальные занятия -->
+        <!-- Остальные занятия; строка с файлами раскрывается -->
         <section v-if="upcoming.length" class="flex flex-col overflow-hidden card lg:mt-1">
           <div
             v-for="(l, i) in upcoming"
             :key="l.id"
             :class="[i > 0 && 'border-t border-line-soft', l.status === 'cancelled' && 'bg-hover']"
-            class="flex items-center gap-3.5 py-3 pr-3 pl-4 md:px-4.5 md:py-3.5"
           >
-            <div :class="l.status === 'cancelled' && 'line-through'" class="w-14 flex-none font-mono">
-              <div :class="l.status === 'cancelled' && 'text-subtle'" class="text-sm font-semibold">
-                {{ dayLabel(new Date(l.startsAt)) }}
+            <component
+              :is="hasFiles(l) ? 'button' : 'div'"
+              :type="hasFiles(l) ? 'button' : undefined"
+              :aria-expanded="hasFiles(l) ? openId === l.id : undefined"
+              :class="hasFiles(l) && 'cursor-pointer hover:bg-hover'"
+              class="flex w-full items-center gap-3.5 py-3 pr-3 pl-4 text-left md:px-4.5 md:py-3.5"
+              @click="hasFiles(l) && (openId = openId === l.id ? null : l.id)"
+            >
+              <div :class="l.status === 'cancelled' && 'line-through'" class="w-14 flex-none font-mono">
+                <div :class="l.status === 'cancelled' && 'text-subtle'" class="text-sm font-semibold">
+                  {{ dayLabel(new Date(l.startsAt)) }}
+                </div>
+                <div class="text-[13px] text-muted">{{ formatTime(new Date(l.startsAt)) }}</div>
               </div>
-              <div class="text-[13px] text-muted">{{ formatTime(new Date(l.startsAt)) }}</div>
-            </div>
-            <div class="min-w-0 flex-1">
-              <div :class="l.status === 'cancelled' && 'text-muted'" class="text-[15px] font-semibold">
-                {{ dayTitle(new Date(l.startsAt)) }}
+              <div class="min-w-0 flex-1">
+                <div :class="l.status === 'cancelled' && 'text-muted'" class="text-[15px] font-semibold">
+                  {{ dayTitle(new Date(l.startsAt)) }}
+                </div>
+                <div class="truncate text-[13px] text-muted">{{ lessonNote(l) }}</div>
               </div>
-              <div class="truncate text-[13px] text-muted">{{ lessonNote(l) }}</div>
-            </div>
-            <UiChip v-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
-            <UiChip v-else-if="isMoved(l)" tone="warn">Новое время</UiChip>
+              <UiChip v-if="l.status === 'cancelled'" tone="danger">Отменено</UiChip>
+              <UiChip v-else-if="isMoved(l)" tone="warn">Новое время</UiChip>
+              <ChevronDown
+                v-if="hasFiles(l)"
+                :size="20"
+                :stroke-width="2"
+                :class="openId === l.id && 'rotate-180'"
+                class="flex-none text-muted transition-transform"
+                aria-hidden="true"
+              />
+            </component>
+            <PortalFiles v-if="openId === l.id" :files="files(l)" class="bg-surface py-1 pr-3 pl-4 md:px-4.5" />
           </div>
         </section>
 
-        <p v-if="lessons && !next && !upcoming.length" class="card px-4.5 py-6 text-center text-[15px] text-muted">
-          Ближайших занятий пока нет
-        </p>
+        <!-- Пусто: на месте лаймовой карточки, той же формы — страница не «проваливается» -->
+        <section
+          v-if="lessons && !next && !upcoming.length"
+          class="flex flex-col items-start gap-5 rounded-[26px] bg-white p-5 shadow-[0_16px_40px_-18px_rgb(20_22_43/0.45)] md:flex-row md:items-center md:gap-6 md:rounded-[28px] md:p-6.5 lg:col-span-2"
+        >
+          <div class="flex size-16 flex-none -rotate-6 items-center justify-center rounded-[20px] bg-ink text-accent">
+            <CalendarClock :size="30" :stroke-width="2" aria-hidden="true" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <h2 class="font-display text-[22px] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[26px]">
+              Занятий пока нет
+            </h2>
+            <p class="max-w-120 text-[15px] leading-normal text-label">
+              Когда репетитор назначит занятие, оно появится здесь вместе с домашкой.
+            </p>
+          </div>
+        </section>
       </div>
 
       <!-- Пробники: как прошлые домашки, плюс итоговый балл после проверки -->
@@ -199,13 +202,14 @@
 </template>
 
 <script setup lang="ts">
-import { Download, Unlink } from '@lucide/vue';
+import { CalendarClock, ChevronDown, Download, Unlink } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { api, ApiError, BASE_URL } from '@/api/client';
 import type { PortalLesson, PortalMock, StudentPublic } from '@/api/types';
+import PortalFiles from '@/components/PortalFiles.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import UiLogo from '@/components/ui/UiLogo.vue';
@@ -248,10 +252,21 @@ const { data: mocks } = useQuery({
   queryKey: ['portal', token, 'mocks'],
   queryFn: () => api.get<PortalMock[]>(`${base.value}/mocks`),
 });
-const mockNumber = (id: string) => mocks.value?.find(m => m.id === id)?.number ?? '';
+const mockNumber = (id: string) => mocks.value?.find(m => m.id === id)?.number;
 const fileTitle = (a: PortalLesson['assignments'][number]) =>
   a.kind === 'mock' && mockNumber(a.id) ? `Пробник ${mockNumber(a.id)}` : a.fileName;
 const fileUrl = (id: string) => `${BASE_URL}${base.value}/files/${id}`;
+const files = (l: PortalLesson) =>
+  l.assignments.map(a => ({
+    id: a.id,
+    fileName: a.fileName,
+    url: fileUrl(a.id),
+    number: a.kind === 'mock' ? mockNumber(a.id) : undefined,
+  }));
+/** Раскрывается только занятие, которое состоится и к которому уже есть файлы. */
+const hasFiles = (l: PortalLesson) => l.status === 'scheduled' && l.assignments.length > 0;
+/** Раскрытая строка в списке занятий. */
+const openId = ref<string | null>(null);
 
 const weekday = (d: Date, style: 'short' | 'long') => d.toLocaleDateString('ru', { weekday: style });
 const capitalize = (s: string) => s[0]!.toUpperCase() + s.slice(1);
