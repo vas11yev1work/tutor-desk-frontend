@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Series } from '@/api/types';
 
-import { seriesCaption, telegram } from '.';
+import { checkCover, seriesCaption, telegram } from '.';
 
 describe('telegram', () => {
   it('добавляет @ для показа и убирает его из ссылки', () => {
@@ -35,5 +35,15 @@ describe('seriesCaption', () => {
   it('бессрочное и с концом', () => {
     expect(seriesCaption(s())).toBe('регулярно в 15:30 · 60 мин · с 1 сентября');
     expect(seriesCaption(s({ endsOn: '2027-05-31' }))).toBe('регулярно в 15:30 · 60 мин · с 1 сентября · до 31 мая');
+  });
+});
+
+describe('checkCover', () => {
+  it('JPEG, PNG, WebP до 5 МБ', () => {
+    expect(checkCover(new File(['x'], 'a.jpg', { type: 'image/jpeg' }))).toBe('');
+    expect(checkCover(new File(['x'], 'a.webp', { type: 'image/webp' }))).toBe('');
+    expect(checkCover(new File(['x'], 'a.gif', { type: 'image/gif' }))).toMatch('JPEG');
+    const big = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'a.png', { type: 'image/png' });
+    expect(checkCover(big)).toMatch('5 МБ');
   });
 });

@@ -18,12 +18,26 @@
   <p v-else-if="error" class="p-6 text-danger">Не удалось загрузить данные</p>
 
   <div v-else-if="student">
-    <header class="bg-paper pt-6 pb-23 text-white md:pt-7 md:pb-27.5">
+    <!-- С обложкой — картинка под затемнением сверху и снизу, иначе фон в клетку -->
+    <header
+      :class="cover ? 'bg-ink bg-cover bg-position-[62%_center] md:bg-position-[center_60%]' : 'bg-paper'"
+      :style="cover && { backgroundImage: cover }"
+      class="pt-24 pb-26 text-white md:pt-8 md:pb-37.5"
+    >
       <div :class="WRAP" class="flex flex-col gap-6.5">
         <UiLogo compact class="max-md:hidden" />
         <div class="flex flex-col gap-2">
-          <div v-if="caption" class="font-mono text-xs tracking-[0.08em] text-accent uppercase">{{ caption }}</div>
-          <h1 class="font-display text-[clamp(30px,3.4vw,44px)] font-semibold tracking-[-0.02em]">
+          <div
+            v-if="caption"
+            :class="cover ? 'text-white/85' : 'text-accent'"
+            class="font-mono text-xs tracking-[0.08em] uppercase"
+          >
+            {{ caption }}
+          </div>
+          <h1
+            :class="cover && '[text-shadow:0_2px_18px_color-mix(in_srgb,var(--color-ink)_35%,transparent)]'"
+            class="font-display text-[clamp(30px,3.4vw,44px)] font-semibold tracking-[-0.02em]"
+          >
             Привет, {{ student.name.split(' ')[0] }}
           </h1>
         </div>
@@ -257,6 +271,13 @@ const { data: mocks } = useQuery({
 const mockNumber = (id: string) => mocks.value?.find(m => m.id === id)?.number;
 const fileTitle = (a: PortalLesson['assignments'][number]) =>
   a.kind === 'mock' && mockNumber(a.id) ? `Пробник ${mockNumber(a.id)}` : a.fileName;
+const shade = (pct: number) => `color-mix(in srgb, var(--color-ink) ${pct}%, transparent)`;
+const cover = computed(
+  () =>
+    student.value?.coverId &&
+    `linear-gradient(180deg, ${shade(35)} 0%, transparent 30%, transparent 45%, ${shade(70)} 100%), ` +
+      `url(${BASE_URL}${base.value}/cover?v=${student.value.coverId})`,
+);
 const fileUrl = (id: string) => `${BASE_URL}${base.value}/files/${id}`;
 const files = (l: PortalLesson) =>
   l.assignments.map(a => ({

@@ -5,9 +5,8 @@
       role="listbox"
       :aria-label="label"
       :class="{
-        'inset-x-0 bottom-[calc(100%+8px)]': variant === 'sidebar',
+        'inset-x-0 bottom-[calc(100%+8px)]': variant !== 'compact',
         'top-[calc(100%+8px)] -right-13 w-57.5': variant === 'compact',
-        'inset-x-0 top-[calc(100%+8px)]': variant === 'field',
       }"
       class="absolute z-40 flex flex-col gap-0.5 rounded-2xl border border-line-card bg-white p-1.5 text-ink shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]"
     >
@@ -49,26 +48,20 @@
     >
       <span class="size-5 flex-none rounded-[7px] border-[1.5px] border-white" :style="swatch(active)" />
       <span class="flex-1">{{ active.name }}</span>
-      <component
-        :is="variant === 'field' ? ChevronDown : ChevronUp"
-        :size="variant === 'field' ? 18 : 16"
-        :stroke-width="2"
-        class="opacity-70"
-        aria-hidden="true"
-      />
+      <ChevronUp :size="variant === 'field' ? 18 : 16" :stroke-width="2" class="opacity-70" aria-hidden="true" />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Check, ChevronDown, ChevronUp } from '@lucide/vue';
+import { Check, ChevronUp } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue';
 
 import { THEMES } from '@/features/theme';
 
 /**
  * sidebar — кнопка в сайдбаре, список вверх; compact — квадратная кнопка в шапке на мобиле, список вниз;
- * field — поле на тёмной панели (тема кабинета ученика), список вниз.
+ * field — поле на тёмной панели (тема кабинета ученика), список вверх — внизу панели не надо скроллить.
  */
 const { variant = 'sidebar', label = 'Тема' } = defineProps<{
   variant?: 'sidebar' | 'compact' | 'field';

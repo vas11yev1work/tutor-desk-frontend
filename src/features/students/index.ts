@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 
-import { api } from '@/api/client';
+import { api, BASE_URL } from '@/api/client';
 import type { Exam, Lesson, Series, Student } from '@/api/types';
 import type { Tone } from '@/components/ui/tones';
 
@@ -58,6 +58,35 @@ export const useUpdateStudent = (id: MaybeRefOrGetter<string>) => {
       qc.setQueryData(['students', toValue(id)], student);
       void qc.invalidateQueries({ queryKey: ['students'] });
     },
+  });
+};
+
+export const MAX_COVER_MB = 5;
+export const COVER_ACCEPT = 'image/jpeg,image/png,image/webp';
+
+/** Пустая строка — файл подходит для обложки; иначе текст ошибки. Окончательно тип проверяет бэкенд по сигнатуре. */
+export const checkCover = (file: File) => {
+  if (!COVER_ACCEPT.split(',').includes(file.type)) return 'Нужна картинка JPEG, PNG или WebP';
+  if (file.size > MAX_COVER_MB * 1024 * 1024) return `Файл больше ${MAX_COVER_MB} МБ`;
+  return '';
+};
+
+/** ?v=coverId — новая обложка получает новый URL, кэш браузера не мешает. */
+export const studentCoverUrl = (s: Pick<Student, 'id' | 'coverId'>) =>
+  s.coverId && `${BASE_URL}/api/admin/students/${s.id}/cover?v=${s.coverId}`;
+
+/** Загрузка (file) или удаление (null) обложки портала ученика. */
+export const useSetCover = (id: MaybeRefOrGetter<string>) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File | null) => {
+      const url = `/api/admin/students/${toValue(id)}/cover`;
+      if (!file) return api.delete<Student>(url);
+      const body = new FormData();
+      body.append('file', file);
+      return api.put<Student>(url, body);
+    },
+    onSuccess: student => qc.setQueryData(['students', toValue(id)], student),
   });
 };
 

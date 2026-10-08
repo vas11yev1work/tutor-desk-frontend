@@ -12,7 +12,7 @@
     <div v-if="student" class="flex flex-col gap-5.5 min-[1200px]:flex-row min-[1200px]:items-start">
       <!-- Профиль -->
       <section
-        class="flex flex-col gap-4.5 bg-paper text-white max-md:-mx-4 max-md:-mt-4 max-md:rounded-b-[30px] max-md:px-4 max-md:pt-3 max-md:pb-5.5 min-[980px]:max-[1200px]:grid min-[980px]:max-[1200px]:grid-cols-2 min-[980px]:max-[1200px]:items-start min-[980px]:max-[1200px]:gap-x-8 min-[980px]:max-[1200px]:gap-y-4.5 min-[1200px]:flex-[1_1_320px] md:gap-5 md:rounded-[26px] md:p-6"
+        class="flex flex-col gap-4.5 bg-paper text-white max-md:-mx-4 max-md:-mt-4 max-md:rounded-b-[30px] max-md:px-4 max-md:pt-3 max-md:pb-5.5 min-[980px]:max-[1200px]:grid min-[980px]:max-[1200px]:grid-cols-2 min-[980px]:max-[1200px]:items-start min-[980px]:max-[1200px]:gap-x-8 min-[980px]:max-[1200px]:gap-y-4.5 min-[980px]:max-[1200px]:[grid-template-areas:'head_link'_'contact_cover'_'theme_cover'_'btns_cover'_'notes_notes'] min-[1200px]:flex-[1_1_320px] md:gap-5 md:rounded-[26px] md:p-6"
       >
         <RouterLink
           to="/students"
@@ -22,79 +22,138 @@
           <ChevronLeft :size="20" :stroke-width="2" aria-hidden="true" />
         </RouterLink>
 
-        <!-- 980–1199px: две колонки «шапка + контакт» | «ссылка + кнопки», заметки под ними на всю ширину.
-             На остальных ширинах обёртки — contents, блоки идут столбцом. -->
-        <div
-          class="contents min-[980px]:max-[1200px]:flex min-[980px]:max-[1200px]:flex-col min-[980px]:max-[1200px]:gap-4.5"
-        >
-          <div class="flex items-center gap-4">
-            <UiAvatar :name="student.name" :tone="EXAM_TONE[student.exam ?? 'none']" size="lg" />
-            <div class="flex min-w-0 flex-col gap-2">
-              <h1 class="font-display text-[23px] leading-[1.15] font-semibold tracking-[-0.02em]">
-                {{ student.name }}
-              </h1>
-              <div class="flex flex-wrap gap-1.5">
-                <UiChip tone="glass">{{ student.grade ? `${student.grade} класс` : 'не школьник' }}</UiChip>
-                <UiChip v-if="student.exam" :tone="EXAM_TONE[student.exam]">{{ EXAM_LABEL[student.exam] }}</UiChip>
-              </div>
+        <!-- 980–1199px: две колонки «шапка, контакт, тема, кнопки» | «ссылка, обложка», заметки на всю ширину.
+             На остальных ширинах блоки идут столбцом в порядке разметки. -->
+        <div class="flex items-center gap-4 min-[980px]:max-[1200px]:[grid-area:head]">
+          <UiAvatar :name="student.name" :tone="EXAM_TONE[student.exam ?? 'none']" size="lg" />
+          <div class="flex min-w-0 flex-col gap-2">
+            <h1 class="font-display text-[23px] leading-[1.15] font-semibold tracking-[-0.02em]">
+              {{ student.name }}
+            </h1>
+            <div class="flex flex-wrap gap-1.5">
+              <UiChip tone="glass">{{ student.grade ? `${student.grade} класс` : 'не школьник' }}</UiChip>
+              <UiChip v-if="student.exam" :tone="EXAM_TONE[student.exam]">{{ EXAM_LABEL[student.exam] }}</UiChip>
             </div>
-          </div>
-
-          <div v-if="tg" class="flex flex-col gap-1">
-            <span :class="CAPTION">Telegram</span>
-            <a :href="tg.url" target="_blank" rel="noopener" class="self-start text-[15px] text-accent hover:underline">
-              {{ tg.label }}
-            </a>
           </div>
         </div>
 
-        <div
-          class="contents min-[980px]:max-[1200px]:flex min-[980px]:max-[1200px]:flex-col min-[980px]:max-[1200px]:gap-4.5"
-        >
-          <div class="flex flex-col gap-2">
-            <span :class="CAPTION">Личная ссылка ученика</span>
-            <div class="flex h-13 items-center gap-2.5 rounded-[14px] border border-ink-line bg-ink pr-1.25 pl-4">
-              <span class="min-w-0 flex-1 truncate font-mono text-[13px]">{{ linkLabel }}</span>
-              <button
-                type="button"
-                aria-label="Скопировать ссылку"
-                class="flex size-10 flex-none cursor-pointer items-center justify-center rounded-[10px] bg-accent text-ink"
-                @click="copyLink"
-              >
-                <Copy :size="18" :stroke-width="2" aria-hidden="true" />
-              </button>
-            </div>
+        <div v-if="tg" class="flex flex-col gap-1 min-[980px]:max-[1200px]:[grid-area:contact]">
+          <span :class="CAPTION">Telegram</span>
+          <a :href="tg.url" target="_blank" rel="noopener" class="self-start text-[15px] text-accent hover:underline">
+            {{ tg.label }}
+          </a>
+        </div>
+
+        <div class="flex flex-col gap-2 min-[980px]:max-[1200px]:[grid-area:link]">
+          <span :class="CAPTION">Личная ссылка ученика</span>
+          <div class="flex h-13 items-center gap-2.5 rounded-[14px] border border-ink-line bg-ink pr-1.25 pl-4">
+            <span class="min-w-0 flex-1 truncate font-mono text-[13px]">{{ linkLabel }}</span>
             <button
               type="button"
-              :disabled="regenerating"
-              class="flex min-h-9 cursor-pointer items-center gap-1.5 self-start px-0.5 text-[13.5px] font-medium text-white/72 hover:text-white disabled:opacity-60"
-              @click="confirmingRegenerate = true"
+              aria-label="Скопировать ссылку"
+              class="flex size-10 flex-none cursor-pointer items-center justify-center rounded-[10px] bg-accent text-ink"
+              @click="copyLink"
             >
-              Перевыпустить — старая перестанет работать
+              <Copy :size="18" :stroke-width="2" aria-hidden="true" />
             </button>
           </div>
-
-          <div class="flex flex-col gap-2">
-            <span :class="CAPTION">Тема кабинета</span>
-            <ThemePicker
-              :model-value="studentTheme"
-              variant="field"
-              label="Тема кабинета ученика"
-              @update:model-value="setStudentTheme"
-            />
-          </div>
-
-          <div class="-mt-2 flex gap-2 min-[980px]:max-[1200px]:mt-0">
-            <UiButton variant="light" size="sm" class="flex-1" @click="editing = true">
-              <Pencil :size="16" :stroke-width="2" aria-hidden="true" />Изменить
-            </UiButton>
-            <UiButton variant="danger" size="sm" @click="confirmingDelete = true">
-              <Trash2 :size="16" :stroke-width="2" aria-hidden="true" />Удалить
-            </UiButton>
-          </div>
+          <button
+            type="button"
+            :disabled="regenerating"
+            class="flex min-h-9 cursor-pointer items-center gap-1.5 self-start px-0.5 text-[13.5px] font-medium text-white/72 hover:text-white disabled:opacity-60"
+            @click="confirmingRegenerate = true"
+          >
+            Перевыпустить — старая перестанет работать
+          </button>
         </div>
 
-        <div v-if="student.notes" class="flex flex-col gap-2 min-[980px]:max-[1200px]:col-span-2">
+        <div
+          class="flex flex-col gap-2 min-[980px]:max-[1200px]:[grid-area:cover]"
+          @dragover.prevent="draggingCover = true"
+          @dragleave="draggingCover = false"
+          @drop.prevent="onCoverDrop"
+        >
+          <span :class="CAPTION">Обложка кабинета</span>
+          <input ref="coverPicker" type="file" :accept="COVER_ACCEPT" class="hidden" @change="onCoverPick" />
+          <div
+            v-if="coverUrl"
+            :class="draggingCover ? 'border-white/60' : 'border-ink-line'"
+            class="relative h-28 overflow-hidden rounded-2xl border bg-cover bg-center"
+            :style="{ backgroundImage: `url(${coverUrl})` }"
+          >
+            <div class="absolute right-2 bottom-2 flex gap-1.5">
+              <button
+                type="button"
+                :disabled="savingCover"
+                :class="COVER_BUTTON"
+                class="bg-white px-3"
+                @click="coverPicker?.click()"
+              >
+                <Upload :size="16" :stroke-width="2" aria-hidden="true" />{{ savingCover ? 'Загружаем…' : 'Заменить' }}
+              </button>
+              <button
+                type="button"
+                aria-label="Убрать обложку"
+                :disabled="savingCover"
+                :class="COVER_BUTTON"
+                class="w-9 bg-danger-soft text-danger"
+                @click="setCover(null)"
+              >
+                <X :size="16" :stroke-width="2.2" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+          <template v-else>
+            <div
+              :class="draggingCover ? 'border-white/60' : 'border-ink-line'"
+              class="flex h-28 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed bg-paper"
+            >
+              <button
+                type="button"
+                :disabled="savingCover"
+                :class="COVER_BUTTON"
+                class="bg-accent px-3"
+                @click="coverPicker?.click()"
+              >
+                <Upload :size="16" :stroke-width="2" aria-hidden="true" />
+                {{ savingCover ? 'Загружаем…' : 'Загрузить картинку' }}
+              </button>
+              <span class="text-[12.5px] text-white/60">или перетащите файл сюда</span>
+            </div>
+            <ul
+              class="mt-0.5 flex list-disc flex-col gap-1 pl-4.5 text-[13px] leading-[1.45] text-white/72 marker:text-accent"
+            >
+              <li>Это фон шапки в кабинете ученика. Пока обложки нет — там фон в клетку.</li>
+              <li>Горизонтальная картинка, лучше от 1600×600 px.</li>
+              <li>JPG, PNG или WebP, до {{ MAX_COVER_MB }} МБ.</li>
+              <li>
+                Главное держите по центру: на телефоне края обрежутся, а внизу слева встанет «Привет,
+                {{ student.name.split(' ')[0] }}».
+              </li>
+            </ul>
+          </template>
+        </div>
+
+        <div class="flex flex-col gap-2 min-[980px]:max-[1200px]:[grid-area:theme]">
+          <span :class="CAPTION">Тема кабинета</span>
+          <ThemePicker
+            :model-value="studentTheme"
+            variant="field"
+            label="Тема кабинета ученика"
+            @update:model-value="setStudentTheme"
+          />
+        </div>
+
+        <div class="-mt-2 flex gap-2 min-[980px]:max-[1200px]:mt-0 min-[980px]:max-[1200px]:[grid-area:btns]">
+          <UiButton variant="light" size="sm" class="flex-1" @click="editing = true">
+            <Pencil :size="16" :stroke-width="2" aria-hidden="true" />Изменить
+          </UiButton>
+          <UiButton variant="danger" size="sm" @click="confirmingDelete = true">
+            <Trash2 :size="16" :stroke-width="2" aria-hidden="true" />Удалить
+          </UiButton>
+        </div>
+
+        <div v-if="student.notes" class="flex flex-col gap-2 min-[980px]:max-[1200px]:[grid-area:notes]">
           <span :class="CAPTION">Заметки для себя</span>
           <p
             class="rounded-[14px] border border-white/22 bg-ink px-4 py-3.5 text-[15px] leading-[1.55] whitespace-pre-line text-white/90"
@@ -268,8 +327,8 @@
 </template>
 
 <script setup lang="ts">
-import { Check, ChevronLeft, ChevronRight, Copy, Pencil, Trash2 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { Check, ChevronLeft, ChevronRight, Copy, Pencil, Trash2, Upload, X } from '@lucide/vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 
@@ -286,13 +345,18 @@ import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue';
 import { useExamMaxScores, useStudentMocks } from '@/features/assignments';
 import { addDays, formatTime, lessonEnd, sameDay, startOfDay } from '@/features/lessons';
 import {
+  checkCover,
+  COVER_ACCEPT,
   EXAM_LABEL,
   EXAM_TONE,
+  MAX_COVER_MB,
   portalUrl,
   seriesCaption,
+  studentCoverUrl,
   telegram,
   useDeleteStudent,
   useRegenerateToken,
+  useSetCover,
   useStudent,
   useStudentLessons,
   useStudentSeries,
@@ -352,6 +416,35 @@ const setStudentTheme = (theme: string) =>
       onError: () => toast.error('Не удалось сменить тему. Попробуйте ещё раз'),
     },
   );
+
+// Обложка портала: выбор файла или перетаскивание; бэкенд ещё раз проверит тип по сигнатуре.
+const COVER_BUTTON =
+  'inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-[10px] text-[13.5px] font-semibold text-ink disabled:opacity-60';
+const coverPicker = useTemplateRef('coverPicker');
+const draggingCover = ref(false);
+const coverUrl = computed(() => student.value && studentCoverUrl(student.value));
+const { mutate: saveCover, isPending: savingCover } = useSetCover(id);
+const setCover = (file: File | null) => {
+  const problem = file && checkCover(file);
+  if (problem) return void toast.error(problem);
+  saveCover(file, {
+    onError: e =>
+      toast.error(
+        e instanceof ApiError && e.status < 500 ? e.message : 'Не удалось сохранить обложку. Попробуйте ещё раз',
+      ),
+  });
+};
+const onCoverPick = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = '';
+  if (file) setCover(file);
+};
+const onCoverDrop = (e: DragEvent) => {
+  draggingCover.value = false;
+  const file = e.dataTransfer?.files[0];
+  if (file) setCover(file);
+};
 
 const { mutate: deleteStudent, isPending: deleting } = useDeleteStudent(id);
 const confirmingDelete = ref(false);

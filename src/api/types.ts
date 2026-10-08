@@ -10,9 +10,10 @@ export interface StudentPublic {
   name: string;
   grade: number | null;
   exam: Exam | null;
-  /** Тема портала, задаёт репетитор (пока всегда lime). */
+  /** Тема портала, задаёт репетитор. */
   theme: string;
-  /** Максимальный первичный балл экзамена| null;
+  /** Обложка шапки; null — фон в клетку. */
+  coverId: string | null;
   /** Максимальный первичный балл экзамена; null — без экзамена. */
   examMax: number | null;
 }
@@ -47,6 +48,8 @@ export interface Student {
   notes: string | null;
   /** Тема кабинета ученика (id из features/theme). */
   theme: string;
+  /** Обложка шапки портала; null — нет, в шапке фон в клетку. */
+  coverId: string | null;
   accessToken: string;
   createdAt: string;
   updatedAt: string;
