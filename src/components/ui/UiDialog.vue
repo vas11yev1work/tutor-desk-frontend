@@ -2,7 +2,7 @@
   <dialog
     ref="el"
     :aria-labelledby="titleId"
-    class="m-auto w-full max-w-150 flex-col rounded-[28px] bg-field text-ink shadow-[0_30px_80px_-20px_rgba(20,22,43,0.55)] backdrop:bg-ink/50 open:flex max-md:h-full max-md:max-h-none max-md:max-w-none max-md:rounded-none max-md:bg-surface max-md:shadow-none"
+    class="m-auto w-full max-w-150 flex-col rounded-[28px] bg-field text-ink shadow-[0_30px_80px_-20px_color-mix(in_srgb,var(--color-ink)_55%,transparent)] backdrop:bg-ink/50 open:flex max-md:h-full max-md:max-h-none max-md:max-w-none max-md:rounded-none max-md:bg-surface max-md:shadow-none"
     @close="open = false"
   >
     <div class="flex items-center justify-between gap-3 px-4 pt-3 md:px-6 md:pt-5.5 md:pb-1">

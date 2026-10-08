@@ -47,14 +47,14 @@ const SIZE = {
 
 const VARIANT = {
   ink: 'bg-ink text-white hover:bg-ink-hover',
-  ghost: 'border border-line bg-white text-ink hover:bg-[#f6f7f9]',
+  ghost: 'border border-line bg-white text-ink hover:bg-ghost-hover',
   /** Призрачная с красным текстом: «Убрать». */
-  ghostDanger: 'border border-line bg-white text-danger hover:bg-[#f6f7f9]',
+  ghostDanger: 'border border-line bg-white text-danger hover:bg-ghost-hover',
   /** Белая на тёмном фоне. */
-  light: 'bg-white text-ink hover:bg-[#f6f7f9]',
+  light: 'bg-white text-ink hover:bg-ghost-hover',
   danger: 'bg-alert text-ink hover:bg-[#ff6a47]',
   /** Лаймовая — главное действие на тёмной панели. */
-  accent: 'bg-accent text-ink hover:bg-[#c6ea36]',
+  accent: 'bg-accent text-ink hover:bg-accent-hover',
   /** Полупрозрачная тёмная на светлом цветном фоне: «Скачать» в карточке занятия ученика. */
   soft: 'bg-ink/8 text-ink hover:bg-ink/14',
   /** Полупрозрачная на тёмном фоне. */

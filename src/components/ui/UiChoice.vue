@@ -2,7 +2,7 @@
   <div
     role="radiogroup"
     :aria-label="label"
-    :class="segmented && 'grid auto-cols-fr grid-flow-col gap-1 rounded-2xl bg-[#e4e6ec] p-1'"
+    :class="segmented && 'grid auto-cols-fr grid-flow-col gap-1 rounded-2xl bg-segment p-1'"
   >
     <button
       v-for="o in options"

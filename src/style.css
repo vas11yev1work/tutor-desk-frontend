@@ -25,6 +25,196 @@
   --color-danger: #b4320f;
   --color-danger-soft: #ffe6de;
   --color-alert: #ff7a5b;
+  /* Оттенки, которые перекрашиваются вместе с темой */
+  --color-ghost-hover: #f6f7f9;
+  --color-ink-line: #48495a;
+  --color-segment: #e4e6ec;
+  --color-line-dash: #cdd0da;
+  --color-line-strong: #c9ccd8;
+  --color-grid: #f1f2f5;
+  --color-past: #b7bac8;
+  --color-hint: #6b6f86;
+  --color-accent-hover: #c6ea36;
+  --color-accent-line: #b7d23a;
+  --color-accent-faint: #fbfdf0;
+  --color-accent-soft: #fafdeb;
+  --color-accent-tint: #f7fbe3;
+}
+
+/* Темы кабинета: lime — значения по умолчанию выше, остальные переопределяют токены.
+   data-theme на <html> ставит скрипт в index.html до отрисовки, затем features/theme. */
+[data-theme='ocean'] {
+  --color-ink: #0e2a3b;
+  --color-ink-hover: #1c4157;
+  --color-accent: #5ce1e6;
+  --color-surface: #eef4f6;
+  --color-muted: #4f6672;
+  --color-label: #3e5562;
+  --color-subtle: #86a0ac;
+  --color-line: #d3e0e5;
+  --color-line-card: #dce7eb;
+  --color-chip: #e3edf0;
+  --color-line-soft: #e8f0f3;
+  --color-ghost-hover: #f3f8f9;
+  --color-hover: #f7fafb;
+  --color-ink-line: #395260;
+  --color-field: #f4f9fa;
+  --color-segment: #dde8ec;
+  --color-line-dash: #c7d6dc;
+  --color-line-strong: #c4d3da;
+  --color-grid: #edf3f5;
+  --color-past: #b2c5cd;
+  --color-hint: #637b87;
+  --color-accent-hover: #54cdd2;
+  --color-accent-line: #4ebec3;
+  --color-accent-faint: #f0fcfd;
+  --color-accent-soft: #ecfcfc;
+  --color-accent-tint: #e3fafb;
+}
+
+[data-theme='bordeaux'] {
+  --color-ink: #3a1020;
+  --color-ink-hover: #52192f;
+  --color-accent: #ffd23f;
+  --color-surface: #f7f1f2;
+  --color-muted: #6f5960;
+  --color-label: #5b464d;
+  --color-subtle: #a8949a;
+  --color-line: #e6d9dc;
+  --color-line-card: #ece1e3;
+  --color-chip: #f0e7e9;
+  --color-line-soft: #f2ebec;
+  --color-ghost-hover: #faf6f7;
+  --color-hover: #fbf8f8;
+  --color-ink-line: #5a4049;
+  --color-field: #faf7f7;
+  --color-segment: #ece2e4;
+  --color-line-dash: #ddcfd2;
+  --color-line-strong: #dacbcf;
+  --color-grid: #f6f0f1;
+  --color-past: #cbbbc0;
+  --color-hint: #846e75;
+  --color-accent-hover: #e9bf39;
+  --color-accent-line: #d8b235;
+  --color-accent-faint: #fffbee;
+  --color-accent-soft: #fffae9;
+  --color-accent-tint: #fff7de;
+}
+
+[data-theme='plum'] {
+  --color-ink: #2a1638;
+  --color-ink-hover: #3d2350;
+  --color-accent: #ff8fb1;
+  --color-surface: #f6f1f5;
+  --color-muted: #6c5a78;
+  --color-label: #584766;
+  --color-subtle: #a193ab;
+  --color-line: #e4d9e2;
+  --color-line-card: #eae1e8;
+  --color-chip: #efe7ed;
+  --color-line-soft: #f1eaf0;
+  --color-ghost-hover: #faf6f9;
+  --color-hover: #fbf8fa;
+  --color-ink-line: #544263;
+  --color-field: #faf7f9;
+  --color-segment: #ebe2e9;
+  --color-line-dash: #daceda;
+  --color-line-strong: #d7cbd7;
+  --color-grid: #f5f0f4;
+  --color-past: #c7bbca;
+  --color-hint: #7f6f8a;
+  --color-accent-hover: #e982a1;
+  --color-accent-line: #d87996;
+  --color-accent-faint: #fff5f8;
+  --color-accent-soft: #fff2f6;
+  --color-accent-tint: #ffecf2;
+}
+
+[data-theme='terracotta'] {
+  --color-ink: #2b1d17;
+  --color-ink-hover: #3f2c23;
+  --color-accent: #ff9f5a;
+  --color-surface: #f7f2ec;
+  --color-muted: #6e5f55;
+  --color-label: #5a4c43;
+  --color-subtle: #a3958b;
+  --color-line: #e5dbd1;
+  --color-line-card: #ebe2d9;
+  --color-chip: #efe7df;
+  --color-line-soft: #f1eae2;
+  --color-ghost-hover: #faf6f2;
+  --color-hover: #fbf8f5;
+  --color-ink-line: #56483f;
+  --color-field: #faf7f3;
+  --color-segment: #ebe3da;
+  --color-line-dash: #dbd0c6;
+  --color-line-strong: #d8cdc3;
+  --color-grid: #f6f0ea;
+  --color-past: #c9bdb3;
+  --color-hint: #817369;
+  --color-accent-hover: #e99152;
+  --color-accent-line: #d8874c;
+  --color-accent-faint: #fff6f0;
+  --color-accent-soft: #fff4ec;
+  --color-accent-tint: #ffeee3;
+}
+
+[data-theme='indigo'] {
+  --color-ink: #1e1b4b;
+  --color-ink-hover: #2e2a66;
+  --color-accent: #a5b4fc;
+  --color-surface: #f1f1f8;
+  --color-muted: #5b5a7e;
+  --color-label: #4a4970;
+  --color-subtle: #9493b4;
+  --color-line: #dadaea;
+  --color-line-card: #e2e2ef;
+  --color-chip: #e8e8f3;
+  --color-line-soft: #ececf5;
+  --color-ghost-hover: #f6f6fb;
+  --color-hover: #f9f9fc;
+  --color-ink-line: #46456f;
+  --color-field: #f7f7fb;
+  --color-segment: #e3e3ef;
+  --color-line-dash: #cfcfe2;
+  --color-line-strong: #ccccdf;
+  --color-grid: #f0f0f7;
+  --color-past: #bcbcd3;
+  --color-hint: #706f92;
+  --color-accent-hover: #96a4e6;
+  --color-accent-line: #8c98d5;
+  --color-accent-faint: #f7f8ff;
+  --color-accent-soft: #f5f6ff;
+  --color-accent-tint: #eff2fe;
+}
+
+[data-theme='graphite'] {
+  --color-ink: #1a1a1a;
+  --color-ink-hover: #2c2c2c;
+  --color-accent: #ff6b5b;
+  --color-surface: #f2f2f0;
+  --color-muted: #5e5e5a;
+  --color-label: #4a4a47;
+  --color-subtle: #999994;
+  --color-line: #dadad6;
+  --color-line-card: #e2e2de;
+  --color-chip: #e8e8e5;
+  --color-line-soft: #ecece9;
+  --color-ghost-hover: #f6f6f4;
+  --color-hover: #f9f9f8;
+  --color-ink-line: #464643;
+  --color-field: #f7f7f5;
+  --color-segment: #e3e3df;
+  --color-line-dash: #d0d0cc;
+  --color-line-strong: #cdcdc9;
+  --color-grid: #f1f1ef;
+  --color-past: #bebeba;
+  --color-hint: #73736f;
+  --color-accent-hover: #e96253;
+  --color-accent-line: #d85b4d;
+  --color-accent-faint: #fff2f0;
+  --color-accent-soft: #ffeeec;
+  --color-accent-tint: #ffe5e3;
 }
 
 /* Тёмный «тетрадный лист» в клетку */

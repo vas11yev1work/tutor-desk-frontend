@@ -2,12 +2,12 @@
   <div class="flex min-w-0 flex-col gap-2">
     <label :for="id" :class="hideLabel ? 'sr-only' : 'text-[13px] font-semibold text-label'">
       {{ label }}
-      <span v-if="optional" class="font-medium text-[#6b6f86]">— необязательно</span>
+      <span v-if="optional" class="font-medium text-hint">— необязательно</span>
     </label>
     <div
       :class="[
         dark
-          ? 'border border-[#48495a] bg-ink text-white focus-within:outline-accent'
+          ? 'border border-ink-line bg-ink text-white focus-within:outline-accent'
           : [filled ? 'bg-field' : 'bg-white', 'text-ink focus-within:outline-ink'],
         invalid ? 'border-[1.5px] border-alert' : !dark && 'border border-line',
         multiline ? 'items-start py-3.5' : 'h-13 items-center',

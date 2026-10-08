@@ -10,6 +10,9 @@ export interface StudentPublic {
   name: string;
   grade: number | null;
   exam: Exam | null;
+  /** Тема портала, задаёт репетитор (пока всегда lime). */
+  theme: string;
+  /** Максимальный первичный балл экзамена| null;
   /** Максимальный первичный балл экзамена; null — без экзамена. */
   examMax: number | null;
 }

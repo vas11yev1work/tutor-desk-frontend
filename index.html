@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <!-- ico — для сборщиков иконок без SVG (иконка MCP-коннектора в Claude), браузеры берут svg -->
     <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- svg-иконка вкладки перекрашивается под тему (public/favicons), ico, PWA и apple-touch — всегда лайм -->
+    <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- PWA: установка на рабочий стол / домашний экран -->
     <link rel="manifest" href="/manifest.webmanifest" />
     <!-- Светлый статус-бар всегда: цвет фона, тёмная тема устройства не перекрашивает -->
@@ -22,6 +23,17 @@
       href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..700&family=Onest:wght@400..700&family=JetBrains+Mono:wght@500..600&display=swap"
     />
     <title>TutorDesk</title>
+    <!-- Тема до отрисовки, без вспышки лайма: кабинет — td-theme, портал ученика — td-theme:<token> (см. features/theme) -->
+    <script>
+      try {
+        var m = location.pathname.match(/^\/s\/([^/]+)/);
+        var t = localStorage.getItem(m ? 'td-theme:' + decodeURIComponent(m[1]) : 'td-theme');
+        if (t && t !== 'lime') {
+          document.documentElement.dataset.theme = t;
+          document.getElementById('favicon').href = '/favicons/' + t + '.svg';
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="app"></div>

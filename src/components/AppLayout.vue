@@ -22,14 +22,17 @@
           </span>
         </RouterLink>
       </nav>
-      <button
-        type="button"
-        class="mt-auto flex min-h-11.5 cursor-pointer items-center gap-3 rounded-[14px] px-3.5 text-[15px] font-semibold text-white/75 transition-colors hover:bg-white/8 hover:text-white"
-        @click="logout"
-      >
-        <LogOut :size="20" :stroke-width="1.8" aria-hidden="true" />
-        Выйти
-      </button>
+      <div class="mt-auto flex flex-col gap-2">
+        <ThemePicker />
+        <button
+          type="button"
+          class="flex min-h-11.5 cursor-pointer items-center gap-3 rounded-[14px] px-3.5 text-[15px] font-semibold text-white/75 transition-colors hover:bg-white/8 hover:text-white"
+          @click="logout"
+        >
+          <LogOut :size="20" :stroke-width="1.8" aria-hidden="true" />
+          Выйти
+        </button>
+      </div>
     </aside>
 
     <main class="flex min-w-0 flex-1 flex-col px-4 pt-4 pb-28 md:px-[clamp(20px,3vw,40px)] md:pt-8 md:pb-12">
@@ -62,17 +65,24 @@
 
 <script setup lang="ts">
 import { Calendar, House, LogOut, Users } from '@lucide/vue';
+import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import ThemePicker from '@/components/ThemePicker.vue';
 import UiLogo from '@/components/ui/UiLogo.vue';
 import { useLogout } from '@/features/auth';
 import { useStudents } from '@/features/students';
+import { applyTheme, useSettings } from '@/features/theme';
 
 const nav = [
   { to: '/', label: 'Сегодня', icon: House },
   { to: '/schedule', label: 'Расписание', icon: Calendar },
   { to: '/students', label: 'Ученики', icon: Users },
 ];
+
+// Тема из localStorage уже стоит (index.html), бэкенд — источник правды, если её сменили на другом устройстве.
+const { data: settings } = useSettings();
+watch(settings, s => s && applyTheme(s.theme), { immediate: true });
 
 const route = useRoute();
 const { data: students } = useStudents();

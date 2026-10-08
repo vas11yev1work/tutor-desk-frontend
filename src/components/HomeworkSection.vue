@@ -79,11 +79,11 @@
         v-for="zone in zones"
         :key="zone.kind"
         :class="[
-          dragging === zone.kind ? 'border-ink' : zone.kind === 'mock' ? 'border-[#b7d23a]' : 'border-[#c9ccd8]',
-          zone.kind === 'mock' ? 'bg-[#fbfdf0]' : 'bg-white',
+          dragging === zone.kind ? 'border-ink' : zone.kind === 'mock' ? 'border-accent-line' : 'border-line-strong',
+          zone.kind === 'mock' ? 'bg-accent-faint' : 'bg-white',
           !files.length && 'min-h-65',
         ]"
-        class="flex flex-col items-center justify-center gap-3.5 rounded-[22px] border-2 border-dashed bg-[linear-gradient(#f1f2f5_1px,transparent_1px),linear-gradient(90deg,#f1f2f5_1px,transparent_1px)] bg-size-[22px_22px] p-5.5 text-center"
+        class="flex flex-col items-center justify-center gap-3.5 rounded-[22px] border-2 border-dashed bg-[linear-gradient(var(--color-grid)_1px,transparent_1px),linear-gradient(90deg,var(--color-grid)_1px,transparent_1px)] bg-size-[22px_22px] p-5.5 text-center"
         @dragover.prevent="dragging = zone.kind"
         @dragleave="dragging = null"
         @drop.prevent="onDrop($event, zone.kind)"

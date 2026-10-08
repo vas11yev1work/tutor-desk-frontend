@@ -35,7 +35,7 @@
 
         <RouterLink
           :to="`/students/${lesson.student.id}`"
-          class="flex items-center gap-3 rounded-[14px] border border-[#48495a] bg-ink p-3 hover:border-white/40"
+          class="flex items-center gap-3 rounded-[14px] border border-ink-line bg-ink p-3 hover:border-white/40"
         >
           <UiAvatar :name="lesson.student.name" :tone="EXAM_TONE[lesson.student.exam ?? 'none']" />
           <div class="flex min-w-0 flex-1 flex-col gap-0.5">

@@ -53,7 +53,7 @@
         >
           <div class="flex flex-col gap-2">
             <span :class="CAPTION">Личная ссылка ученика</span>
-            <div class="flex h-13 items-center gap-2.5 rounded-[14px] border border-[#48495a] bg-ink pr-1.25 pl-4">
+            <div class="flex h-13 items-center gap-2.5 rounded-[14px] border border-ink-line bg-ink pr-1.25 pl-4">
               <span class="min-w-0 flex-1 truncate font-mono text-[13px]">{{ linkLabel }}</span>
               <button
                 type="button"

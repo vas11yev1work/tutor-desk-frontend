@@ -69,7 +69,7 @@
                     ? 'border-ink bg-ink text-white'
                     : values[i] === 0
                       ? 'border-[#ffc9b9] bg-danger-soft text-[#7a1f06]'
-                      : 'border-dashed border-[#c9ccd8] bg-white text-ink'
+                      : 'border-dashed border-line-strong bg-white text-ink'
                 "
                 class="relative flex h-17 cursor-pointer items-center justify-center rounded-2xl border-[1.5px] md:h-19"
                 @click="cycle(i)"

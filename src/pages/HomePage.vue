@@ -5,7 +5,7 @@
     >
       <div class="flex flex-col gap-2.5">
         <span
-          class="flex min-h-11 items-center pr-14 font-mono text-xs tracking-[0.08em] text-accent uppercase md:min-h-0 md:pr-0 md:text-muted"
+          class="flex min-h-11 items-center pr-28 font-mono text-xs tracking-[0.08em] text-accent uppercase md:min-h-0 md:pr-0 md:text-muted"
         >
           {{ todayLabel }}
         </span>
@@ -27,6 +27,7 @@
         <UiButton @click="adding = true"><Plus :size="18" :stroke-width="2" aria-hidden="true" />Занятие</UiButton>
       </div>
 
+      <ThemePicker compact class="absolute! top-5 right-18 md:hidden" />
       <button
         type="button"
         aria-label="Выйти"
@@ -74,7 +75,7 @@
           <div
             v-for="day in week"
             :key="day.date.getTime()"
-            :class="[day.isToday && '-m-1.5 rounded-[14px] bg-[#f7fbe3] p-1.5', day.isPast && 'opacity-55']"
+            :class="[day.isToday && '-m-1.5 rounded-[14px] bg-accent-tint p-1.5', day.isPast && 'opacity-55']"
             class="flex flex-col gap-1.5"
           >
             <div class="flex items-baseline gap-1.5 px-1 pt-1 pb-1.5">
@@ -121,6 +122,7 @@ import { useRouter } from 'vue-router';
 import { KIND } from '@/components/lessonKinds';
 import LessonList from '@/components/LessonList.vue';
 import NewLessonDialog from '@/components/NewLessonDialog.vue';
+import ThemePicker from '@/components/ThemePicker.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import { useLogout } from '@/features/auth';

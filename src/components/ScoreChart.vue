@@ -1,41 +1,46 @@
 <template>
   <svg width="100%" :viewBox="`0 0 ${G.w} ${G.h}`" class="block" role="img" :aria-label="ariaLabel">
-    <g stroke="#ecedf1" stroke-width="1">
+    <g class="stroke-chip" stroke-width="1">
       <line v-for="t in ticks" :key="t" :x1="G.gridLeft" :y1="y(t)" :x2="G.w" :y2="y(t)" />
     </g>
-    <g font-family="JetBrains Mono, monospace" :font-size="compact ? 10 : 11" fill="#6b6f86">
+    <g font-family="JetBrains Mono, monospace" :font-size="compact ? 10 : 11" class="fill-hint">
       <text v-for="t in ticks" :key="t" x="0" :y="y(t) + (compact ? -4 : 4)">{{ t }}</text>
     </g>
     <polyline
       v-if="points.length > 1"
       :points="points.map((p, i) => `${x(i)},${y(p.value)}`).join(' ')"
       fill="none"
-      stroke="#14162b"
+      class="stroke-ink"
       stroke-width="2.5"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
-    <!-- Последний пробник — крупнее и лаймовый -->
+    <!-- Последний пробник — крупнее и в цвет акцента -->
     <circle
       v-for="(p, i) in points"
       :key="i"
       :cx="x(i)"
       :cy="y(p.value)"
       :r="isLast(i) ? (compact ? 7 : 8) : compact ? 5 : 5.5"
-      :fill="isLast(i) ? '#d4f54c' : '#fff'"
-      stroke="#14162b"
+      :class="isLast(i) ? 'fill-accent' : 'fill-white'"
+      class="stroke-ink"
       stroke-width="2.5"
     />
     <g
       font-family="JetBrains Mono, monospace"
       :font-size="compact ? 12 : 13"
       font-weight="600"
-      fill="#14162b"
+      class="fill-ink"
       text-anchor="middle"
     >
       <text v-for="(p, i) in points" :key="i" :x="x(i)" :y="y(p.value) - (isLast(i) ? 16 : 13)">{{ p.value }}</text>
     </g>
-    <g font-family="Onest, system-ui, sans-serif" :font-size="compact ? 11 : 12.5" fill="#5a5e76" text-anchor="middle">
+    <g
+      font-family="Onest, system-ui, sans-serif"
+      :font-size="compact ? 11 : 12.5"
+      class="fill-muted"
+      text-anchor="middle"
+    >
       <text v-for="(p, i) in points" :key="i" :x="x(i)" :y="G.labelY">{{ p.label }}</text>
     </g>
   </svg>

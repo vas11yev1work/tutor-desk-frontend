@@ -204,7 +204,7 @@
 <script setup lang="ts">
 import { CalendarClock, ChevronDown, Download, Unlink } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { api, ApiError, BASE_URL } from '@/api/client';
@@ -216,6 +216,7 @@ import UiLogo from '@/components/ui/UiLogo.vue';
 import { addDays, formatTime, sameDay, startOfDay } from '@/features/lessons';
 import { isMoved, splitPortalLessons } from '@/features/portal';
 import { EXAM_LABEL } from '@/features/students';
+import { applyTheme } from '@/features/theme';
 
 const WRAP = 'mx-auto w-full max-w-270 px-[clamp(16px,4vw,40px)]';
 
@@ -227,6 +228,7 @@ const { data: student, error } = useQuery({
   queryKey: ['portal', token],
   queryFn: () => api.get<StudentPublic>(base.value),
 });
+watch(student, s => s && applyTheme(s.theme, token.value), { immediate: true });
 const isNotFound = computed(() => error.value instanceof ApiError && error.value.status === 404);
 const caption = computed(() => {
   const s = student.value;

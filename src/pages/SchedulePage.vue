@@ -26,7 +26,7 @@
           <span class="sr-only">Ученик</span>
           <select
             v-model="studentId"
-            class="h-11 cursor-pointer appearance-none rounded-[14px] border border-line bg-white pr-10 pl-4 text-sm font-semibold hover:bg-[#f6f7f9]"
+            class="h-11 cursor-pointer appearance-none rounded-[14px] border border-line bg-white pr-10 pl-4 text-sm font-semibold hover:bg-ghost-hover"
           >
             <option value="">Все ученики</option>
             <option v-for="s in students" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -61,7 +61,7 @@
           <i
             v-for="item in day.items.filter(isLive)"
             :key="item.key"
-            :class="day.isPast ? 'bg-[#b7bac8]' : item.kind === 'clash' ? 'bg-alert' : 'bg-ink'"
+            :class="day.isPast ? 'bg-past' : item.kind === 'clash' ? 'bg-alert' : 'bg-ink'"
             class="size-1.25 rounded-full"
           />
         </span>
@@ -92,7 +92,7 @@
         <div
           v-for="(day, i) in week"
           :key="i"
-          :class="[day.isToday && 'bg-[#fafdeb]', day.isPast && 'opacity-60']"
+          :class="[day.isToday && 'bg-accent-soft', day.isPast && 'opacity-60']"
           class="-m-2 flex min-h-90 flex-col gap-2 rounded-2xl p-2"
         >
           <div :class="day.isToday && 'bg-accent'" class="flex items-baseline gap-2 rounded-xl px-2.5 py-1.5">
@@ -120,7 +120,7 @@
           </RouterLink>
           <div
             v-if="!day.items.length"
-            class="rounded-xl border-[1.5px] border-dashed border-[#cdd0da] px-2.5 py-3 text-[13px] text-muted"
+            class="rounded-xl border-[1.5px] border-dashed border-line-dash px-2.5 py-3 text-[13px] text-muted"
           >
             Выходной
           </div>
@@ -156,7 +156,7 @@
         </div>
         <div
           v-if="!day.items.length"
-          class="rounded-[20px] border-[1.5px] border-dashed border-[#cdd0da] p-4 text-center text-sm text-muted"
+          class="rounded-[20px] border-[1.5px] border-dashed border-line-dash p-4 text-center text-sm text-muted"
         >
           Выходной — занятий нет
         </div>
