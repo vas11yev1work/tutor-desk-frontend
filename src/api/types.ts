@@ -10,6 +10,28 @@ export interface StudentPublic {
   name: string;
   grade: number | null;
   exam: Exam | null;
+  /** Максимальный первичный балл экзамена; null — без экзамена. */
+  examMax: number | null;
+}
+
+/** GET /api/s/:token/lessons?from=&to= — урезанное занятие; перенос виден по originalStartsAt ≠ startsAt. */
+export interface PortalLesson {
+  id: string;
+  startsAt: string;
+  originalStartsAt: string | null;
+  durationMin: number;
+  status: LessonStatus;
+  assignments: Pick<Assignment, 'id' | 'kind' | 'fileName'>[];
+}
+
+/** GET /api/s/:token/mocks — по порядку выдачи. */
+export interface PortalMock {
+  id: string;
+  number: number;
+  fileName: string;
+  lessonStartsAt: string;
+  /** Первичный балл; null — ещё не проверен. */
+  total: number | null;
 }
 
 /** GET /api/admin/students */

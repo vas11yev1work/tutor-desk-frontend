@@ -55,6 +55,8 @@ const VARIANT = {
   danger: 'bg-alert text-ink hover:bg-[#ff6a47]',
   /** Лаймовая — главное действие на тёмной панели. */
   accent: 'bg-accent text-ink hover:bg-[#c6ea36]',
+  /** Полупрозрачная тёмная на светлом цветном фоне: «Скачать» в карточке занятия ученика. */
+  soft: 'bg-ink/8 text-ink hover:bg-ink/14',
   /** Полупрозрачная на тёмном фоне. */
   glass: 'border border-white/22 bg-white/10 text-white hover:bg-white/16',
 };
