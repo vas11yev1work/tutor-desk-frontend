@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-6 pb-36 md:-mt-1 md:gap-5.5 md:pb-0">
+  <div class="flex flex-col gap-6 pb-24 md:-mt-1 md:gap-5.5 md:pb-0">
     <!-- Мобила: назад, название, PDF -->
     <div class="flex items-center gap-3 md:hidden">
       <UiButton variant="ghost" size="icon" aria-label="Назад" :to="`/students/${id}`">
@@ -162,9 +162,9 @@
         </aside>
       </div>
 
-      <!-- Мобила: балл и сохранение внизу -->
+      <!-- Мобила: балл и сохранение над нижним меню (h-21 в AppLayout) -->
       <div
-        class="fixed inset-x-0 bottom-0 z-10 flex items-center gap-3.5 rounded-t-[26px] bg-paper px-4 pt-4 pb-7 text-white md:hidden"
+        class="fixed inset-x-0 bottom-21 z-10 flex items-center gap-3.5 rounded-t-[26px] bg-paper px-4 py-4 text-white md:hidden"
       >
         <div class="flex flex-1 flex-col gap-0.5">
           <span class="text-[11px] font-semibold tracking-[0.06em] text-accent uppercase">Первичный балл</span>
