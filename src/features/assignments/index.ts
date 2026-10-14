@@ -84,7 +84,8 @@ export const chartTicks = (values: number[]) => {
 };
 
 /** Ячейка тепловой карты: полностью, частично или 0 баллов. */
-export const cellLevel = (score: number, max: number) => (score >= max ? 'full' : score === 0 ? 'zero' : 'partial');
+export const cellLevel = (score: number | null, max: number) =>
+  score === null ? 'none' : score >= max ? 'full' : score === 0 ? 'zero' : 'partial';
 
 /** Максимумы по заданиям не меняются — грузим один раз. */
 export const useExamMaxScores = () =>
@@ -98,7 +99,7 @@ export const useExamMaxScores = () =>
 export const useScoreMock = () => {
   const invalidate = useInvalidateAssignments();
   return useMutation({
-    mutationFn: ({ id, scores, comment }: { id: string; scores: number[]; comment: string | null }) =>
+    mutationFn: ({ id, scores, comment }: { id: string; scores: (number | null)[]; comment: string | null }) =>
       api.put<Assignment>(`/api/admin/assignments/${id}/score`, { scores, comment }),
     onSuccess: invalidate,
   });

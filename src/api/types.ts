@@ -66,8 +66,8 @@ export interface Assignment {
   /** Байты. */
   size: number;
   createdAt: string;
-  /** Только у пробника: первичные баллы по номерам заданий; null — ещё не проверен. */
-  scores: number[] | null;
+  /** Только у пробника: первичные баллы по номерам заданий (null — задание не решено); null — ещё не проверен. */
+  scores: (number | null)[] | null;
   /** Сумма scores — первичный балл. */
   total: number | null;
   comment: string | null;

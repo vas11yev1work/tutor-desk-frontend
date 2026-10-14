@@ -50,7 +50,7 @@
 
       <div class="flex flex-wrap items-start gap-5.5">
         <div class="flex min-w-0 flex-[2_1_520px] flex-col gap-5.5">
-          <!-- Часть 1: по баллу, нажатие — верно ↔ пропуск (0) -->
+          <!-- Часть 1: по баллу, нажатие — не решено → верно → неверно → не решено -->
           <section class="flex flex-col gap-3.5 card p-3.5 md:p-5">
             <div class="flex items-baseline justify-between gap-3">
               <h2 class="section-title">
@@ -63,22 +63,24 @@
                 v-for="i in parts.part1"
                 :key="i"
                 type="button"
-                :aria-label="`Задание ${i + 1}: ${values[i] === 1 ? 'верно' : 'пропуск'}`"
-                :aria-pressed="values[i] === 1"
+                :aria-label="`Задание ${i + 1}: ${values[i] === 1 ? 'верно' : values[i] === 0 ? 'неверно' : 'не решено'}`"
                 :class="
                   values[i] === 1
                     ? 'border-ink bg-ink text-white'
-                    : 'border-dashed border-line-strong bg-white text-ink'
+                    : values[i] === 0
+                      ? 'border-[#ffc9b9] bg-danger-soft text-[#7a1f06]'
+                      : 'border-dashed border-line-strong bg-white text-ink'
                 "
                 class="relative flex h-17 cursor-pointer items-center justify-center rounded-2xl border-[1.5px] md:h-19"
                 @click="toggle(i)"
               >
                 <span class="absolute top-2 left-2.5 font-mono text-xs font-semibold">{{ i + 1 }}</span>
                 <Check v-if="values[i] === 1" :size="26" :stroke-width="2.6" class="text-accent" aria-hidden="true" />
+                <X v-else-if="values[i] === 0" :size="24" :stroke-width="2.6" aria-hidden="true" />
                 <span v-else class="text-[13px] text-muted">—</span>
               </button>
             </div>
-            <p class="text-[13px] text-muted">Нажатие отмечает задание верным или снимает отметку</p>
+            <p class="text-[13px] text-muted">Нажатие переключает: верно → неверно → не решено</p>
           </section>
 
           <!-- Часть 2: развёрнутые ответы, 0…max -->
@@ -102,6 +104,19 @@
                 class="flex flex-1 gap-1.5 md:w-72.5 md:flex-none"
               >
                 <button
+                  type="button"
+                  role="radio"
+                  aria-label="Не решено"
+                  :aria-checked="values[i] === null"
+                  :class="
+                    values[i] === null ? 'border-line-strong bg-line-soft text-ink' : 'border-line bg-white text-muted'
+                  "
+                  class="flex h-11 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-xl border-[1.5px]"
+                  @click="values[i] = values[i] === null ? undefined : null"
+                >
+                  <X :size="18" :stroke-width="2.4" aria-hidden="true" />
+                </button>
+                <button
                   v-for="k in max[i]! + 1"
                   :key="k"
                   type="button"
@@ -109,7 +124,7 @@
                   :aria-checked="values[i] === k - 1"
                   :class="pointClass(i, k - 1)"
                   class="h-11 min-w-0 flex-1 cursor-pointer rounded-xl border-[1.5px] font-mono text-[15px] font-semibold"
-                  @click="values[i] = values[i] === k - 1 ? null : k - 1"
+                  @click="values[i] = values[i] === k - 1 ? undefined : k - 1"
                 >
                   {{ k - 1 }}
                 </button>
@@ -181,7 +196,7 @@
 </template>
 
 <script setup lang="ts">
-import { Check, ChevronLeft, ChevronRight, FileText } from '@lucide/vue';
+import { Check, ChevronLeft, ChevronRight, FileText, X } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
@@ -218,8 +233,8 @@ const parts = computed(() => splitParts(max.value ?? []));
 const allIndices = computed(() => (max.value ?? []).map((_, i) => i));
 const widestPart2 = computed(() => Math.max(0, ...parts.value.part2.map(i => max.value![i]!)));
 
-/** null — задание ещё не внесено (только часть 2; в части 1 пропуск — это 0). */
-const values = ref<(number | null)[]>([]);
+/** null — задание не решено; undefined — ещё не внесено (только часть 2). */
+const values = ref<(number | null | undefined)[]>([]);
 const comment = ref('');
 
 // Заполняем один раз на пробник: и при открытии, и при переходе на другой пробник.
@@ -229,8 +244,8 @@ watch(
   ([m, mx]) => {
     if (!m || !mx || filledFor === m.id) return;
     filledFor = m.id;
-    // Часть 1 (макс 1) по умолчанию — пропуски, часть 2 — не внесена
-    values.value = m.scores ? [...m.scores] : mx.map(x => (x === 1 ? 0 : null));
+    // Часть 1 (макс 1) по умолчанию — не решена, часть 2 — не внесена
+    values.value = m.scores ? [...m.scores] : mx.map(x => (x === 1 ? null : undefined));
     comment.value = m.comment ?? '';
   },
   { immediate: true },
@@ -239,11 +254,12 @@ watch(
 const sumOf = (indices: number[]) => indices.reduce((s, i) => s + (values.value[i] ?? 0), 0);
 const maxOf = (indices: number[]) => indices.reduce((s, i) => s + (max.value?.[i] ?? 0), 0);
 const primary = computed(() => sumOf(allIndices.value));
-const filled = computed(() => values.value.filter(v => v !== null).length);
+const filled = computed(() => values.value.filter(v => v !== undefined).length);
 const complete = computed(() => !!max.value && filled.value === max.value.length);
 
 const toggle = (i: number) => {
-  values.value[i] = values.value[i] === 1 ? 0 : 1;
+  const v = values.value[i];
+  values.value[i] = v === 1 ? 0 : v === 0 ? null : 1;
 };
 
 const pointClass = (i: number, k: number) => {
@@ -259,7 +275,7 @@ const { mutate, isPending } = useScoreMock();
 const save = () => {
   if (!mock.value || !complete.value) return;
   mutate(
-    { id: mock.value.id, scores: values.value as number[], comment: comment.value.trim() || null },
+    { id: mock.value.id, scores: values.value as (number | null)[], comment: comment.value.trim() || null },
     {
       onSuccess: () => {
         toast.success('Баллы сохранены');

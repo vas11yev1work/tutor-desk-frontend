@@ -76,6 +76,7 @@
             <span class="flex items-center gap-1.5">
               <i class="size-3.5 rounded border border-[#ffc2b0] bg-[#ffe1d8]" />0 баллов
             </span>
+            <span class="flex items-center gap-1.5"><i class="size-3.5 rounded bg-line-soft" />не решено</span>
           </div>
         </div>
 
@@ -125,11 +126,11 @@
             <span
               v-for="m in mobileMocks"
               :key="m.id"
-              :class="CELL[cellLevel(m.scores![t]!, max[t]!)]"
+              :class="CELL[cellLevel(m.scores![t] ?? null, max[t]!)]"
               class="flex h-7.5 items-center justify-center rounded-lg font-mono text-xs font-semibold"
             >
-              <Check v-if="isTick(m.scores![t]!, max[t]!)" :size="14" :stroke-width="3" aria-label="верно" />
-              <template v-else>{{ cellText(m.scores![t]!, max[t]!) }}</template>
+              <Check v-if="isTick(m.scores![t] ?? null, max[t]!)" :size="14" :stroke-width="3" aria-label="верно" />
+              <template v-else>{{ cellText(m.scores![t] ?? null, max[t]!) }}</template>
             </span>
           </div>
         </div>
@@ -152,6 +153,7 @@ const CELL = {
   full: 'bg-ink text-accent',
   partial: 'bg-[#b9c1ee] text-ink',
   zero: 'bg-[#ffe1d8] text-[#9a2a0a]',
+  none: 'bg-line-soft text-muted',
 };
 /** На мобиле столбцов немного — последние 4 пробника. */
 const MOBILE_MOCKS = 4;
@@ -177,7 +179,7 @@ const mobileMocks = computed(() => scored.value.slice(-MOBILE_MOCKS));
 /** Доля набранных баллов по каждому заданию за все оценённые пробники. */
 const solved = computed(() =>
   (max.value ?? []).map((mx, t) => {
-    const sum = scored.value.reduce((s, m) => s + m.scores![t]!, 0);
+    const sum = scored.value.reduce((s, m) => s + (m.scores![t] ?? 0), 0);
     return Math.round((sum / (mx * scored.value.length)) * 100);
   }),
 );
@@ -190,8 +192,8 @@ const mobileGrid = computed(() => ({
 }));
 
 /** Задание на 1 балл решено — галочка; иначе «0» или «2/3». */
-const isTick = (score: number, mx: number) => mx === 1 && score >= 1;
-const cellText = (score: number, mx: number) => (mx === 1 ? '0' : `${score}/${mx}`);
+const isTick = (score: number | null, mx: number) => mx === 1 && score !== null && score >= 1;
+const cellText = (score: number | null, mx: number) => (score === null ? '—' : mx === 1 ? '0' : `${score}/${mx}`);
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString('ru', { day: 'numeric', month: 'short' }).replace('.', '');

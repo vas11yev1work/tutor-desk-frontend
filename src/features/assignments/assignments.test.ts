@@ -42,7 +42,12 @@ describe('chartTicks', () => {
 });
 
 describe('cellLevel', () => {
-  it('полностью, частично, ноль', () => {
-    expect([cellLevel(1, 1), cellLevel(2, 4), cellLevel(0, 3)]).toEqual(['full', 'partial', 'zero']);
+  it('полностью, частично, ноль, не решено', () => {
+    expect([cellLevel(1, 1), cellLevel(2, 4), cellLevel(0, 3), cellLevel(null, 3)]).toEqual([
+      'full',
+      'partial',
+      'zero',
+      'none',
+    ]);
   });
 });
