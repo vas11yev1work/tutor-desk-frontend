@@ -142,11 +142,25 @@
 
         <!-- Десктоп: итог и сохранение -->
         <aside class="hidden min-w-0 flex-[1_1_300px] flex-col gap-5 rounded-[26px] bg-paper p-6 text-white md:flex">
-          <div class="flex flex-col gap-1">
-            <span class="text-xs font-semibold tracking-[0.06em] text-accent uppercase">Первичный балл</span>
-            <span class="font-display text-7xl leading-none font-bold tracking-[-0.02em]">
-              {{ primary }}<span class="text-[28px] text-white/45"> / {{ maxOf(allIndices) }}</span>
-            </span>
+          <div class="flex items-end justify-between gap-4">
+            <div class="flex min-w-0 flex-col gap-1">
+              <span class="text-xs font-semibold tracking-[0.06em] text-accent uppercase">Первичный балл</span>
+              <span class="font-display text-7xl leading-none font-bold tracking-[-0.02em]">
+                {{ primary }}<span class="text-[28px] text-white/45"> / {{ maxOf(allIndices) }}</span>
+              </span>
+            </div>
+            <div v-if="grade" :aria-label="`Оценка ${grade}`" class="flex flex-none flex-col items-center gap-1.5">
+              <span class="text-xs font-semibold tracking-[0.06em] text-white/65 uppercase" aria-hidden="true">
+                Оценка
+              </span>
+              <span
+                :class="gradeClass(grade)"
+                class="flex size-18 -rotate-4 items-center justify-center rounded-[20px] font-display text-[40px] font-bold"
+                aria-hidden="true"
+              >
+                {{ grade }}
+              </span>
+            </div>
           </div>
           <div v-if="parts.part2.length" class="grid grid-cols-2 gap-2.5">
             <div v-for="(part, n) in [parts.part1, parts.part2]" :key="n" class="flex flex-col gap-0.5">
@@ -187,6 +201,14 @@
             {{ primary }}<span class="text-base text-white/45"> / {{ maxOf(allIndices) }}</span>
           </span>
         </div>
+        <span
+          v-if="grade"
+          :aria-label="`Оценка ${grade}`"
+          :class="gradeClass(grade)"
+          class="flex size-13 flex-none items-center justify-center rounded-2xl font-display text-[26px] font-bold"
+        >
+          {{ grade }}
+        </span>
         <UiButton variant="accent" size="lg" :disabled="!complete" :loading="isPending" @click="save"
           >Сохранить</UiButton
         >
@@ -206,6 +228,8 @@ import UiTextField from '@/components/ui/UiTextField.vue';
 import {
   assignmentFileUrl,
   formatTaskRange,
+  gradeClass,
+  mockGrade,
   splitParts,
   useExamMaxScores,
   useScoreMock,
@@ -254,6 +278,7 @@ watch(
 const sumOf = (indices: number[]) => indices.reduce((s, i) => s + (values.value[i] ?? 0), 0);
 const maxOf = (indices: number[]) => indices.reduce((s, i) => s + (max.value?.[i] ?? 0), 0);
 const primary = computed(() => sumOf(allIndices.value));
+const grade = computed(() => (student.value?.exam ? mockGrade(student.value.exam, values.value) : null));
 const filled = computed(() => values.value.filter(v => v !== undefined).length);
 const complete = computed(() => !!max.value && filled.value === max.value.length);
 

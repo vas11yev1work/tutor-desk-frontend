@@ -281,7 +281,16 @@
                 >
               </span>
               <span
-                v-else
+                v-if="gradeOf(m)"
+                :aria-label="`Оценка ${gradeOf(m)}`"
+                :title="`Оценка ${gradeOf(m)}`"
+                :class="gradeClass(gradeOf(m)!)"
+                class="flex size-9 flex-none items-center justify-center rounded-[11px] font-display text-[17px] font-bold"
+              >
+                {{ gradeOf(m) }}
+              </span>
+              <span
+                v-if="m.total === null"
                 class="inline-flex min-h-9.5 items-center rounded-xl bg-ink px-3 text-[13.5px] font-semibold text-white"
               >
                 Оценить
@@ -333,7 +342,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 
 import { ApiError } from '@/api/client';
-import type { Lesson, Series } from '@/api/types';
+import type { Assignment, Lesson, Series } from '@/api/types';
 import EditSeriesDialog from '@/components/EditSeriesDialog.vue';
 import NewLessonDialog from '@/components/NewLessonDialog.vue';
 import StudentFormDialog from '@/components/StudentFormDialog.vue';
@@ -342,7 +351,7 @@ import UiAvatar from '@/components/ui/UiAvatar.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue';
-import { useExamMaxScores, useStudentMocks } from '@/features/assignments';
+import { gradeClass, mockGrade, useExamMaxScores, useStudentMocks } from '@/features/assignments';
 import { addDays, formatTime, lessonEnd, sameDay, startOfDay } from '@/features/lessons';
 import {
   checkCover,
@@ -473,6 +482,7 @@ const examMax = computed(() => {
 });
 const scored = computed(() => (mocks.value ?? []).filter(m => m.total !== null));
 const lastScored = computed(() => scored.value.at(-1));
+const gradeOf = (m: Assignment) => (m.scores && student.value?.exam ? mockGrade(student.value.exam, m.scores) : null);
 const delta = computed(() => {
   const [prev, last] = scored.value.slice(-2);
   return prev && last ? last.total! - prev.total! : null;

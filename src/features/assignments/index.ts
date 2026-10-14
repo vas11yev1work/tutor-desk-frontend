@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 
 import { api, BASE_URL } from '@/api/client';
-import type { Assignment, ExamMaxScores } from '@/api/types';
+import type { Assignment, Exam, ExamMaxScores } from '@/api/types';
 
 /** Лимит бэка — проверяем заранее, чтобы не гнать 50 МБ ради ошибки 413. */
 export const MAX_FILE_MB = 20;
@@ -86,6 +86,25 @@ export const chartTicks = (values: number[]) => {
 /** Ячейка тепловой карты: полностью, частично или 0 баллов. */
 export const cellLevel = (score: number | null, max: number) =>
   score === null ? 'none' : score >= max ? 'full' : score === 0 ? 'zero' : 'partial';
+
+/** Нижние границы первичного балла для оценок 3, 4, 5; у ЕГЭ профиля оценки нет. */
+const GRADE_FROM: Partial<Record<Exam, [number, number, number]>> = { oge: [8, 15, 22], ege_base: [7, 12, 17] };
+/** ОГЭ: геометрия — задания 15–19 и 23–25, без 2 баллов по ней выше «2» не ставят. */
+const OGE_GEOMETRY = [14, 15, 16, 17, 18, 22, 23, 24];
+
+/** Школьная оценка за пробник по баллам заданий (не внесённые и не решённые — 0); null — экзамен без оценки. */
+export const mockGrade = (exam: Exam, scores: (number | null | undefined)[]) => {
+  const from = GRADE_FROM[exam];
+  if (!from) return null;
+  const at = (i: number) => scores[i] ?? 0;
+  if (exam === 'oge' && OGE_GEOMETRY.reduce((s, i) => s + at(i), 0) < 2) return 2;
+  const total = scores.reduce<number>((s, _, i) => s + at(i), 0);
+  return total >= from[2] ? 5 : total >= from[1] ? 4 : total >= from[0] ? 3 : 2;
+};
+
+/** Пятёрка — акцентом, остальные — белым с рамкой. */
+export const gradeClass = (grade: number) =>
+  grade === 5 ? 'bg-accent text-ink' : 'bg-white text-ink ring-1 ring-line ring-inset';
 
 /** Максимумы по заданиям не меняются — грузим один раз. */
 export const useExamMaxScores = () =>

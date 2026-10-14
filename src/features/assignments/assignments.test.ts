@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { cellLevel, chartTicks, checkPdf, formatFileSize, formatTaskRange, splitParts } from '.';
+import { cellLevel, chartTicks, checkPdf, formatFileSize, formatTaskRange, mockGrade, splitParts } from '.';
 
 describe('assignments', () => {
   it('formatFileSize', () => {
@@ -49,5 +49,25 @@ describe('cellLevel', () => {
       'zero',
       'none',
     ]);
+  });
+});
+
+describe('mockGrade', () => {
+  const oge = (algebra: number, geometry: number) => {
+    const scores = Array<number | null>(25).fill(0);
+    scores[0] = algebra; // в тесте баллы вне геометрии кладём в одно задание — на оценку влияет только сумма
+    scores[14] = geometry;
+    return scores;
+  };
+  it('ОГЭ: границы и геометрия', () => {
+    expect([7, 8, 14, 15, 21, 22, 31].map(t => mockGrade('oge', oge(t - 2, 2)))).toEqual([2, 3, 3, 4, 4, 5, 5]);
+    expect(mockGrade('oge', oge(25, 1))).toBe(2);
+  });
+  it('ЕГЭ база: границы, null — 0', () => {
+    const base = (t: number) => [t, null, undefined];
+    expect([6, 7, 11, 12, 16, 17].map(t => mockGrade('ege_base', base(t)))).toEqual([2, 3, 3, 4, 4, 5]);
+  });
+  it('ЕГЭ профиль — без оценки', () => {
+    expect(mockGrade('ege_profile', [5])).toBeNull();
   });
 });

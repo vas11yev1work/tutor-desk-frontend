@@ -34,6 +34,8 @@ export interface PortalMock {
   number: number;
   fileName: string;
   lessonStartsAt: string;
+  /** Баллы по номерам заданий (null — задание не решено); null — ещё не проверен. */
+  scores: (number | null)[] | null;
   /** Первичный балл; null — ещё не проверен. */
   total: number | null;
 }

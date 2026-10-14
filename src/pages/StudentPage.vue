@@ -149,6 +149,15 @@
               >
             </span>
             <UiChip v-else-if="new Date(m.lessonStartsAt) < now">Проверяется</UiChip>
+            <span
+              v-if="gradeOf(m)"
+              :aria-label="`Оценка ${gradeOf(m)}`"
+              :title="`Оценка ${gradeOf(m)}`"
+              :class="gradeClass(gradeOf(m)!)"
+              class="flex size-9 flex-none items-center justify-center rounded-[11px] font-display text-[17px] font-bold"
+            >
+              {{ gradeOf(m) }}
+            </span>
             <UiButton
               :href="fileUrl(m.id)"
               target="_blank"
@@ -227,6 +236,7 @@ import PortalFiles from '@/components/PortalFiles.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiChip from '@/components/ui/UiChip.vue';
 import UiLogo from '@/components/ui/UiLogo.vue';
+import { gradeClass, mockGrade } from '@/features/assignments';
 import { addDays, formatTime, sameDay, startOfDay } from '@/features/lessons';
 import { isMoved, splitPortalLessons } from '@/features/portal';
 import { EXAM_LABEL } from '@/features/students';
@@ -268,6 +278,7 @@ const { data: mocks } = useQuery({
   queryKey: ['portal', token, 'mocks'],
   queryFn: () => api.get<PortalMock[]>(`${base.value}/mocks`),
 });
+const gradeOf = (m: PortalMock) => (m.scores && student.value?.exam ? mockGrade(student.value.exam, m.scores) : null);
 const mockNumber = (id: string) => mocks.value?.find(m => m.id === id)?.number;
 const fileTitle = (a: PortalLesson['assignments'][number]) =>
   a.kind === 'mock' && mockNumber(a.id) ? `Пробник ${mockNumber(a.id)}` : a.fileName;
